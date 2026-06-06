@@ -372,7 +372,8 @@ h2 {
   letter-spacing: 0.08em;
 }
 
-#detection-import {
+#detection-import,
+#deletion-report-import {
   width: 1px;
   height: 1px;
   position: absolute;
@@ -380,6 +381,105 @@ h2 {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   clip-path: inset(50%);
+}
+
+.compliance-console {
+  margin-top: 22px;
+  padding: 30px;
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 36px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 250, 240, 0.85);
+  box-shadow: var(--shadow);
+}
+
+.compliance-intro > p:not(.eyebrow) {
+  max-width: 430px;
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.compliance-actions {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.audit-button {
+  padding: 11px 13px;
+  color: var(--teal-dark);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.audit-button.primary {
+  color: var(--card);
+  border-color: var(--teal);
+  background: var(--teal);
+}
+
+.compliance-checks {
+  display: grid;
+  gap: 10px;
+}
+
+.check-card {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 13px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #fffdf8;
+}
+
+.check-card > span {
+  color: var(--muted);
+  font-family: Georgia, serif;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.check-card strong {
+  display: block;
+  font-size: 12px;
+}
+
+.check-card p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.check-card b {
+  padding: 6px 8px;
+  border-radius: 20px;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.check-card.verified b {
+  color: var(--teal-dark);
+  background: rgba(0, 127, 115, 0.12);
+}
+
+.check-card.pending b {
+  color: #8c5c00;
+  background: rgba(240, 162, 2, 0.15);
 }
 
 .import-status {
@@ -862,6 +962,10 @@ h2 {
   .action-note {
     grid-column: 1 / -1;
   }
+
+  .compliance-console {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 620px) {
@@ -918,7 +1022,8 @@ h2 {
 
   .issue-panel,
   .pipeline-panel,
-  .detail-panel {
+  .detail-panel,
+  .compliance-console {
     padding: 22px;
   }
 
@@ -928,5 +1033,14 @@ h2 {
 
   .action-note {
     grid-column: auto;
+  }
+
+  .check-card {
+    grid-template-columns: 24px 1fr;
+  }
+
+  .check-card b {
+    grid-column: 2;
+    justify-self: start;
   }
 }

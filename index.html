@@ -253,6 +253,60 @@
             </div>
           </div>
         </section>
+
+        <section class="compliance-console">
+          <div class="compliance-intro">
+            <p class="eyebrow">Compliance console</p>
+            <h2>Prove the safeguards.</h2>
+            <p>
+              Policy claims and deletion evidence are kept separate. Upload the
+              AI pipeline’s deletion report to complete the audit record.
+            </p>
+            <div class="compliance-actions">
+              <label class="audit-button primary" for="deletion-report-import">
+                Verify deletion report
+              </label>
+              <input
+                id="deletion-report-import"
+                type="file"
+                accept="application/json,.json"
+              />
+              <button id="export-compliance" class="audit-button" type="button">
+                Export audit summary
+              </button>
+            </div>
+            <div id="deletion-status" class="import-status" role="status">
+              Waiting for raw-data deletion proof.
+            </div>
+          </div>
+
+          <div class="compliance-checks">
+            <article class="check-card verified">
+              <span>01</span>
+              <div>
+                <strong>Purpose limited</strong>
+                <p>Only approved urban-object classes enter the dashboard.</p>
+              </div>
+              <b>Verified</b>
+            </article>
+            <article class="check-card verified">
+              <span>02</span>
+              <div>
+                <strong>Personal data rejected</strong>
+                <p>Identity, face, plate, vehicle, and tracking fields fail import.</p>
+              </div>
+              <b>Verified</b>
+            </article>
+            <article id="deletion-check" class="check-card pending">
+              <span>03</span>
+              <div>
+                <strong>Raw data deleted</strong>
+                <p id="deletion-check-copy">Deletion evidence has not been imported.</p>
+              </div>
+              <b id="deletion-check-label">Pending</b>
+            </article>
+          </div>
+        </section>
       </main>
     </div>
     <script type="module" src="/src/main.js"></script>

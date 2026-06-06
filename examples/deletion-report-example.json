@@ -1,0 +1,11 @@
+{
+  "deleted_at": "2026-06-06T08:30:00Z",
+  "raw_dir": "C:/local-only/raw",
+  "deleted_file_count": 3,
+  "deleted_files": [
+    "C:/local-only/raw/demo.mp4",
+    "C:/local-only/raw/frame-001.jpg",
+    "C:/local-only/raw/frame-002.jpg"
+  ],
+  "status": "raw_data_deleted"
+}

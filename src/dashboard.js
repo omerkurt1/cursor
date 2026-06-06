@@ -33,6 +33,51 @@ export function updateDetectionStatus(detections, id, status) {
   );
 }
 
+export function normalizeDeletionReport(report) {
+  if (!report || typeof report !== "object" || Array.isArray(report)) {
+    throw new Error("Deletion report must be a JSON object.");
+  }
+  if (report.status !== "raw_data_deleted") {
+    throw new Error('Deletion report status must be "raw_data_deleted".');
+  }
+  if (
+    !Number.isInteger(report.deleted_file_count) ||
+    report.deleted_file_count < 0
+  ) {
+    throw new Error("Deletion report must contain a valid deleted file count.");
+  }
+
+  const deletedAt = new Date(report.deleted_at);
+  if (Number.isNaN(deletedAt.getTime())) {
+    throw new Error("Deletion report must contain a valid deletion time.");
+  }
+
+  return {
+    deletedAt: deletedAt.toISOString(),
+    deletedFileCount: report.deleted_file_count,
+    status: report.status,
+  };
+}
+
+export function buildComplianceSummary(detections, deletionReport) {
+  const deletionVerified = deletionReport?.status === "raw_data_deleted";
+
+  return {
+    generatedAt: new Date().toISOString(),
+    status: deletionVerified ? "ready" : "pending_deletion_proof",
+    purpose: "Urban object detection for municipal maintenance",
+    detectionCount: detections.length,
+    personalDataFieldsAccepted: false,
+    anonymizationRequiredBeforeDetection: true,
+    retainedDetectionFields: [...allowedFields],
+    rawDataDeletion: {
+      verified: deletionVerified,
+      deletedAt: deletionReport?.deletedAt ?? null,
+      deletedFileCount: deletionReport?.deletedFileCount ?? 0,
+    },
+  };
+}
+
 const allowedFields = new Set([
   "id",
   "district",

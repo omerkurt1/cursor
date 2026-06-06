@@ -3,6 +3,8 @@ import {
   calculateStats,
   filterDetections,
   getRoutePoints,
+  buildComplianceSummary,
+  normalizeDeletionReport,
   updateDetectionStatus,
   validateDetectionImport,
 } from "./dashboard.js";
@@ -137,5 +139,53 @@ describe("updateDetectionStatus", () => {
     expect(() =>
       updateDetectionStatus(detections, "DET-001", "deleted"),
     ).toThrow(/unsupported status/i);
+  });
+});
+
+describe("normalizeDeletionReport", () => {
+  it("keeps only deletion proof required for compliance", () => {
+    expect(
+      normalizeDeletionReport({
+        deleted_at: "2026-06-06T08:30:00Z",
+        raw_dir: "C:/private/raw",
+        deleted_file_count: 4,
+        deleted_files: ["C:/private/raw/video.mp4"],
+        status: "raw_data_deleted",
+      }),
+    ).toEqual({
+      deletedAt: "2026-06-06T08:30:00.000Z",
+      deletedFileCount: 4,
+      status: "raw_data_deleted",
+    });
+  });
+
+  it("rejects reports that do not prove raw data deletion", () => {
+    expect(() =>
+      normalizeDeletionReport({
+        deleted_at: "2026-06-06T08:30:00Z",
+        deleted_file_count: 0,
+        status: "pending",
+      }),
+    ).toThrow(/raw_data_deleted/i);
+  });
+});
+
+describe("buildComplianceSummary", () => {
+  it("creates a minimized audit summary without detection records", () => {
+    expect(
+      buildComplianceSummary(detections, {
+        deletedAt: "2026-06-06T08:30:00.000Z",
+        deletedFileCount: 4,
+        status: "raw_data_deleted",
+      }),
+    ).toMatchObject({
+      status: "ready",
+      detectionCount: 3,
+      personalDataFieldsAccepted: false,
+      rawDataDeletion: {
+        verified: true,
+        deletedFileCount: 4,
+      },
+    });
   });
 });

@@ -2,9 +2,11 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./styles.css";
 import {
+  buildComplianceSummary,
   calculateStats,
   filterDetections,
   getRoutePoints,
+  normalizeDeletionReport,
   updateDetectionStatus,
   validateDetectionImport,
 } from "./dashboard.js";
@@ -37,6 +39,7 @@ const filters = {
 
 let detections = [...sampleDetections];
 let selectedId = detections[0]?.id;
+let deletionReport = null;
 
 const map = L.map("map", {
   zoomControl: false,
@@ -249,6 +252,48 @@ async function importDetections(file) {
   }
 }
 
+function downloadJson(filename, value) {
+  const url = URL.createObjectURL(
+    new Blob([JSON.stringify(value, null, 2)], { type: "application/json" }),
+  );
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function renderDeletionProof() {
+  const check = document.querySelector("#deletion-check");
+  const copy = document.querySelector("#deletion-check-copy");
+  const label = document.querySelector("#deletion-check-label");
+
+  check.classList.toggle("verified", Boolean(deletionReport));
+  check.classList.toggle("pending", !deletionReport);
+  label.textContent = deletionReport ? "Verified" : "Pending";
+  copy.textContent = deletionReport
+    ? `${deletionReport.deletedFileCount} raw file(s) deleted at ${new Intl.DateTimeFormat(
+        "en-GB",
+        { dateStyle: "medium", timeStyle: "short" },
+      ).format(new Date(deletionReport.deletedAt))}.`
+    : "Deletion evidence has not been imported.";
+}
+
+async function importDeletionReport(file) {
+  try {
+    deletionReport = normalizeDeletionReport(JSON.parse(await file.text()));
+    renderDeletionProof();
+    const status = document.querySelector("#deletion-status");
+    status.textContent =
+      `Deletion verified from ${file.name}. Sensitive file paths were discarded.`;
+    status.dataset.state = "success";
+  } catch (error) {
+    const status = document.querySelector("#deletion-status");
+    status.textContent = error.message;
+    status.dataset.state = "error";
+  }
+}
+
 function bindControls() {
   ["district", "type", "priority", "status"].forEach((key) => {
     document.querySelector(`#${key}-filter`).addEventListener("change", (event) => {
@@ -283,8 +328,24 @@ function bindControls() {
     );
     render();
   });
+
+  document
+    .querySelector("#deletion-report-import")
+    .addEventListener("change", (event) => {
+      const [file] = event.target.files;
+      if (file) importDeletionReport(file);
+      event.target.value = "";
+    });
+
+  document.querySelector("#export-compliance").addEventListener("click", () => {
+    downloadJson(
+      "urbanpulse-compliance-summary.json",
+      buildComplianceSummary(detections, deletionReport),
+    );
+  });
 }
 
 populateDistricts();
 bindControls();
 render();
+renderDeletionProof();
