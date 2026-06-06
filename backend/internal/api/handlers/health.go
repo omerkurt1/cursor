@@ -34,6 +34,27 @@ func Health(d HealthDeps) http.HandlerFunc {
 	}
 }
 
+// Index godoc
+// GET / — service banner + available routes (avoids a bare 404 at the root).
+func Index(version string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"service": "city-backend",
+			"version": version,
+			"status":  "ok",
+			"docs":    "https://github.com/omerkurt1/cursor/blob/mert/ai-pipeline/backend/api-contract.json",
+			"endpoints": []string{
+				"GET /health",
+				"GET /api/v1/detections",
+				"GET /api/v1/detections/stats",
+				"POST /api/v1/scan",
+				"GET /api/v1/scan/status",
+				"GET /ws (websocket)",
+			},
+		})
+	}
+}
+
 func boolToStatus(ok bool) string {
 	if ok {
 		return "ok"

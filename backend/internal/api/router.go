@@ -46,6 +46,8 @@ func NewRouter(d Deps) http.Handler {
 	r.Use(middleware.Timeout(30 * time.Second))
 
 	// ── Routes ─────────────────────────────────────────────────────────────
+	r.Get("/", handlers.Index(d.Version))
+
 	r.Get("/health", handlers.Health(handlers.HealthDeps{
 		PipelineAlive: func() bool {
 			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
