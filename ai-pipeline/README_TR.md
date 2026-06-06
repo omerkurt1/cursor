@@ -1,17 +1,19 @@
 # AI ve Mahremiyet Pipeline
 
-Bu klasor, hackathon icin kamera goruntusunu once anonimlestiren, sonra yalnizca anonimlestirilmis video uzerinden kentsel obje tespiti yapan guvenli veri hattidir.
+Bu klasor, Google Street View goruntusunu once anonimlestiren, sonra yalnizca anonimlestirilmis video uzerinden kentsel obje tespiti yapan guvenli veri hattidir.
 
 ## Pipeline
 
 ```text
-raw video
-  -> face + license plate blur
-  -> anonymized video
-  -> urban object detection
-  -> duplicate cleanup
-  -> JSON export
-  -> raw-data deletion report
+Google Street View API  (fetch_street_view.py)
+  -> Street View video   [data/input/ — gitignore ile korunur]
+  -> face + license plate blur  (anonymize_video.py — fail-closed)
+  -> anonymized video    [output/anonymized_demo.mp4]
+  -> urban object detection  (detect_objects.py — YOLOv8 veya demo)
+  -> duplicate cleanup   (dedupe_json.py)
+  -> JSON export         [output/detections.json]
+  -> HTTP API            (serve.py — Go backend'e sunar)
+  -> raw-data deletion   (delete_raw_data.py — KVKK kaniti)
 ```
 
 ## Kurulum
@@ -37,7 +39,43 @@ Bu ortamda `python` komutunda `pip` yoksa, kullandiginiz Python executable yolun
 & '<python.exe yolu>' scripts\run_pipeline.py --input data\input\demo.mp4 --lat 41.021 --lng 28.874 --demo-fallback
 ```
 
-## Hizli Demo
+## Google Street View ile Tam Pipeline
+
+API anahtarini ayarla:
+
+```powershell
+copy .env.example .env
+# .env dosyasini ac ve STREET_VIEW_API_KEY degerini gir
+```
+
+Tek komutla calistir (Street View -> anonymize -> detect -> JSON):
+
+```powershell
+python scripts\streetview_pipeline.py --lat 41.021 --lng 28.874
+```
+
+YOLO yoksa demo modunda:
+
+```powershell
+python scripts\streetview_pipeline.py --lat 41.021 --lng 28.874 --demo-fallback
+```
+
+Ham veriyi pipeline sonunda silerek:
+
+```powershell
+python scripts\streetview_pipeline.py --lat 41.021 --lng 28.874 --delete-raw-data
+```
+
+Sonuclari HTTP API uzerinden sun (Go backend icin):
+
+```powershell
+python scripts\serve.py --port 8000
+# GET http://localhost:8000/api/detections
+```
+
+---
+
+## Hizli Demo (API Anahtari Olmadan)
 
 Ham videoyu repoya koymayin. Yerel olarak su klasore ekleyin:
 
