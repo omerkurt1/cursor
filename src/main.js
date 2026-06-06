@@ -51,6 +51,15 @@ let detections = createDemoDetections(sampleDetections);
 let selectedId = detections[0]?.id;
 let deletionReport = null;
 let pipelineReport = null;
+let scanWaypoints = null; // null = single-point scan; array = multi-point route scan
+
+const GUNGOREN_WAYPOINTS = [
+  { lat: 41.0115, lng: 28.873 },
+  { lat: 41.013, lng: 28.875 },
+  { lat: 41.015, lng: 28.8775 },
+  { lat: 41.0165, lng: 28.88 },
+  { lat: 41.018, lng: 28.882 },
+];
 
 const map = L.map("map", {
   zoomControl: false,
@@ -404,15 +413,31 @@ async function connectPipeline() {
   }
 }
 
+async function pollScanStatus(baseUrl, statusEl) {
+  for (let attempt = 0; attempt < 30; attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const data = await fetchJson(`${baseUrl}/api/scan/status`, "Scan status");
+      if (!data.scan_running) return data.last_result ?? {};
+      statusEl.textContent = `Scanning… (${(attempt + 1) * 2}s elapsed)`;
+    } catch {
+      // network hiccup — keep polling
+    }
+  }
+  throw new Error("Scan timed out after 60 seconds.");
+}
+
 async function triggerScan() {
-  const status = document.querySelector("#scan-status");
+  const statusEl = document.querySelector("#scan-status");
+  const progressEl = document.querySelector("#scan-progress");
   const button = document.querySelector("#trigger-scan");
-  const routeName =
-    document.querySelector("#scan-route-name").value.trim() || "route-a";
+  const demoFallback =
+    document.querySelector("#scan-demo-fallback")?.checked ?? true;
 
   button.disabled = true;
-  status.textContent = "Scanning route…";
-  status.dataset.state = "";
+  statusEl.textContent = "Sending scan request…";
+  statusEl.dataset.state = "";
+  progressEl?.removeAttribute("hidden");
 
   let baseUrl;
   try {
@@ -420,46 +445,91 @@ async function triggerScan() {
       document.querySelector("#pipeline-api-url").value,
     );
   } catch (error) {
-    status.textContent = error.message;
-    status.dataset.state = "error";
+    statusEl.textContent = error.message;
+    statusEl.dataset.state = "error";
+    progressEl?.setAttribute("hidden", "");
     button.disabled = false;
     return;
   }
 
   try {
+    let body;
+    if (scanWaypoints) {
+      body = { waypoints: scanWaypoints, demo_fallback: demoFallback };
+    } else {
+      const lat = parseFloat(
+        document.querySelector("#scan-lat")?.value ?? "41.015",
+      );
+      const lng = parseFloat(
+        document.querySelector("#scan-lng")?.value ?? "28.875",
+      );
+      if (Number.isNaN(lat) || Number.isNaN(lng)) {
+        throw new Error("Latitude and longitude must be valid numbers.");
+      }
+      body = { lat, lng, demo_fallback: demoFallback };
+    }
+
     const scanResponse = await fetch(`${baseUrl}/api/scan`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ route: routeName }),
+      body: JSON.stringify(body),
       cache: "no-store",
     });
+
+    if (scanResponse.status === 409) {
+      throw new Error("A scan is already running. Please wait and try again.");
+    }
     if (!scanResponse.ok) {
-      const body = await scanResponse.json().catch(() => ({}));
+      const errBody = await scanResponse.json().catch(() => ({}));
       throw new Error(
-        body.error || `Scan request failed (${scanResponse.status}).`,
+        errBody.error || `Scan request failed (${scanResponse.status}).`,
       );
+    }
+
+    if (scanResponse.status === 202) {
+      statusEl.textContent = "Scan started — waiting for results…";
+      const progressText = document.querySelector("#scan-progress-text");
+      if (progressText) progressText.textContent = "Scanning…";
+      await pollScanStatus(baseUrl, statusEl);
     }
 
     detections = normalizePipelineDetections(
       await fetchJson(`${baseUrl}/api/detections`, "Detections"),
     );
     selectedId = detections[0]?.id;
-    populateDistricts();
-    resetFilters();
-    render();
 
-    status.textContent = `Scan complete — ${detections.length} detection(s) refreshed.`;
-    status.dataset.state = "success";
-  } catch {
-    status.textContent = "API offline — showing demo data";
-    status.dataset.state = "error";
-    detections = createDemoDetections(sampleDetections);
-    selectedId = detections[0]?.id;
+    try {
+      pipelineReport = normalizePipelineReport(
+        await fetchJson(`${baseUrl}/api/pipeline-report`, "Pipeline report"),
+      );
+    } catch {
+      pipelineReport = null;
+    }
+
     populateDistricts();
     resetFilters();
     render();
+    renderPipelineEvidence();
+
+    statusEl.textContent = `Scan complete — ${detections.length} detection(s) refreshed.`;
+    statusEl.dataset.state = "success";
+  } catch (error) {
+    if (!error.message.includes("already running")) {
+      pipelineReport = null;
+      renderPipelineEvidence();
+      detections = createDemoDetections(sampleDetections);
+      selectedId = detections[0]?.id;
+      populateDistricts();
+      resetFilters();
+      render();
+    }
+    statusEl.textContent = error.message.includes("fetch")
+      ? "API offline — showing demo data"
+      : error.message;
+    statusEl.dataset.state = "error";
   } finally {
     button.disabled = false;
+    progressEl?.setAttribute("hidden", "");
   }
 }
 
@@ -508,6 +578,27 @@ function bindControls() {
   document
     .querySelector("#trigger-scan")
     .addEventListener("click", triggerScan);
+
+  document.querySelector("#preset-gungoren")?.addEventListener("click", () => {
+    scanWaypoints = GUNGOREN_WAYPOINTS;
+    const latInput = document.querySelector("#scan-lat");
+    const lngInput = document.querySelector("#scan-lng");
+    if (latInput) latInput.value = GUNGOREN_WAYPOINTS[0].lat;
+    if (lngInput) lngInput.value = GUNGOREN_WAYPOINTS[0].lng;
+    const label = document.querySelector("#scan-mode-label");
+    if (label)
+      label.textContent = `Güngören route (${GUNGOREN_WAYPOINTS.length} waypoints)`;
+  });
+
+  document.querySelector("#preset-clear")?.addEventListener("click", () => {
+    scanWaypoints = null;
+    const latInput = document.querySelector("#scan-lat");
+    const lngInput = document.querySelector("#scan-lng");
+    if (latInput) latInput.value = "41.015";
+    if (lngInput) lngInput.value = "28.875";
+    const label = document.querySelector("#scan-mode-label");
+    if (label) label.textContent = "Single point";
+  });
 
   document.querySelector("#issue-list").addEventListener("click", (event) => {
     const item = event.target.closest("[data-detection-id]");

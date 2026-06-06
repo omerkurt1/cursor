@@ -152,18 +152,46 @@
                   Send a scan request to the local pipeline and refresh map
                   detections. Primary source: Municipal vehicle cameras.
                 </p>
-                <label class="api-url-label" for="scan-route-name">
-                  Route / location
-                  <input
-                    id="scan-route-name"
-                    type="text"
-                    value="route-a"
-                    spellcheck="false"
-                  />
+                <div class="scan-inputs">
+                  <label class="api-url-label" for="scan-lat">
+                    Latitude
+                    <input
+                      id="scan-lat"
+                      type="number"
+                      step="0.0001"
+                      value="41.015"
+                    />
+                  </label>
+                  <label class="api-url-label" for="scan-lng">
+                    Longitude
+                    <input
+                      id="scan-lng"
+                      type="number"
+                      step="0.0001"
+                      value="28.875"
+                    />
+                  </label>
+                </div>
+                <div class="scan-presets">
+                  <button id="preset-gungoren" class="text-button" type="button">
+                    Güngören route preset
+                  </button>
+                  <button id="preset-clear" class="text-button" type="button">
+                    Single point
+                  </button>
+                </div>
+                <span id="scan-mode-label" class="scan-mode-label">Single point</span>
+                <label class="scan-demo-label">
+                  <input id="scan-demo-fallback" type="checkbox" checked />
+                  Use demo fallback if no Street View key
                 </label>
                 <button id="trigger-scan" class="import-button scan-button" type="button">
                   Trigger Scan
                 </button>
+                <div id="scan-progress" class="scan-progress" hidden>
+                  <span class="live-dot"></span>
+                  <span id="scan-progress-text">Scanning…</span>
+                </div>
                 <div id="scan-status" class="import-status" role="status">
                   No scan in progress.
                 </div>

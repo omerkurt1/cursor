@@ -453,6 +453,55 @@ h2 {
   opacity: 0.88;
 }
 
+.scan-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.scan-presets {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.scan-mode-label {
+  display: block;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  color: var(--teal-dark);
+  border-radius: 20px;
+  background: rgba(0, 127, 115, 0.1);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.scan-demo-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.scan-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: rgba(0, 127, 115, 0.08);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--teal-dark);
+}
+
 .source-note {
   margin: 8px 0 0;
   color: var(--muted);
