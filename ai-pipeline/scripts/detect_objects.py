@@ -25,7 +25,7 @@ def load_model(model_path: str):
     try:
         from ultralytics import YOLO
     except ImportError as exc:
-        raise RuntimeError("ultralytics kurulu degil. `pip install -r requirements.txt` calistirin.") from exc
+        raise RuntimeError("ultralytics kurulu degil. `pip install -r requirements-yolo.txt` calistirin.") from exc
     return YOLO(model_path)
 
 

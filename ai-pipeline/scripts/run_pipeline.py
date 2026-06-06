@@ -9,6 +9,25 @@ from anonymize_video import anonymize_video
 from dedupe_json import dedupe
 from detect_objects import detect_objects
 from delete_raw_data import delete_raw_data
+from validate_outputs import validate_detection_file, validate_pipeline_report_file
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+def report_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix()
+    except ValueError:
+        return str(path.resolve())
+
+
+def sanitize_anonymization_report(report: dict) -> dict:
+    sanitized = dict(report)
+    for key in ("input", "output"):
+        if key in sanitized:
+            sanitized[key] = report_path(Path(sanitized[key]))
+    return sanitized
 
 
 def main() -> None:
@@ -24,6 +43,7 @@ def main() -> None:
     parser.add_argument("--report-dir", default=Path("reports"), type=Path)
     parser.add_argument("--delete-raw-data", action="store_true")
     parser.add_argument("--raw-dir", type=Path)
+    parser.add_argument("--skip-validation", action="store_true")
     args = parser.parse_args()
 
     output_dir = args.output_dir
@@ -63,13 +83,13 @@ def main() -> None:
 
     pipeline_report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "input_video": str(args.input),
-        "anonymized_video": str(anonymized_video),
-        "detections_raw_json": str(raw_json),
-        "detections_json": str(cleaned_json),
-        "pipeline_report_json": str(pipeline_report_json),
-        "deletion_report_json": str(deletion_report_json) if deletion_report else None,
-        "anonymization": report,
+        "input_video": report_path(args.input),
+        "anonymized_video": report_path(anonymized_video),
+        "detections_raw_json": report_path(raw_json),
+        "detections_json": report_path(cleaned_json),
+        "pipeline_report_json": report_path(pipeline_report_json),
+        "deletion_report_json": report_path(deletion_report_json) if deletion_report else None,
+        "anonymization": sanitize_anonymization_report(report),
         "raw_detection_count": len(detections),
         "deduped_detection_count": len(cleaned),
         "demo_fallback_used": args.demo_fallback,
@@ -83,6 +103,11 @@ def main() -> None:
     pipeline_report_json.parent.mkdir(parents=True, exist_ok=True)
     pipeline_report_json.write_text(json.dumps(pipeline_report, indent=2), encoding="utf-8")
     print(f"Pipeline raporu: {pipeline_report_json}")
+
+    if not args.skip_validation:
+        validate_detection_file(cleaned_json)
+        validate_pipeline_report_file(pipeline_report_json)
+        print("Cikti validasyonu tamamlandi.")
 
 
 if __name__ == "__main__":

@@ -57,3 +57,12 @@ Onemli alanlar:
 3. `type`, `confidence` ve `timestamp` bilgisini marker detayinda goster.
 4. Ham video veya frame kabul etme; backend sadece anonimlestirilmis ciktilar ve JSON ile calissin.
 
+## Validasyon
+
+AI tarafindan uretilen JSON'u backend'e vermeden once:
+
+```powershell
+python scripts\validate_outputs.py --detections output\detections.json --pipeline-report reports\pipeline_report.json
+```
+
+Bu komut yalnizca izinli detection alanlarini kabul eder. Kimlik tespiti, plaka OCR, yuz tanima, takip ID'si veya ham medya yolu final detection JSON'unda yer alamaz.
