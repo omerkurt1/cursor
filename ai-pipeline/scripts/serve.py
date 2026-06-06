@@ -15,7 +15,7 @@ OUTPUT_DIR = PROJECT_ROOT / "output"
 REPORT_DIR = PROJECT_ROOT / "reports"
 PYTHON = sys.executable
 
-# Ayni anda birden fazla scan calismamasi icin kilit
+# Scan durumu - thread-safe erişim için _scan_lock ile korunur
 _scan_lock = threading.Lock()
 _scan_status: dict = {"running": False, "last_result": None}
 
@@ -38,10 +38,12 @@ CORS(app)
 
 @app.get("/health")
 def health() -> Response:
+    with _scan_lock:
+        running = _scan_status["running"]
     return jsonify({
         "status": "ok",
         "service": "ai-privacy-pipeline",
-        "scan_running": _scan_status["running"],
+        "scan_running": running,
     })
 
 
@@ -65,7 +67,9 @@ def deletion_report() -> Response:
 
 @app.get("/api/scan/status")
 def scan_status() -> Response:
-    return jsonify(_scan_status)
+    with _scan_lock:
+        snapshot = dict(_scan_status)
+    return jsonify(snapshot)
 
 
 # ── POST /api/scan ─────────────────────────────────────────────────────────────
@@ -74,28 +78,18 @@ def scan_status() -> Response:
 def trigger_scan() -> Response:
     """Go backend veya frontend'in cagirdigi scan tetikleyici.
 
-    Body (JSON):
-        {
-            "lat": 41.021,
-            "lng": 28.874,
-            "demo_fallback": true   // opsiyonel, varsayilan false
-        }
+    Body (JSON) — tek nokta:
+        {"lat": 41.021, "lng": 28.874, "demo_fallback": false}
 
-    Veya rota taramasi:
-        {
-            "waypoints": [
-                {"lat": 41.021, "lng": 28.874},
-                {"lat": 41.022, "lng": 28.876}
-            ],
-            "demo_fallback": true
-        }
+    Body (JSON) — rota:
+        {"waypoints": [{"lat": 41.021, "lng": 28.874}, ...], "demo_fallback": false}
 
     Aninda 202 doner; scan arka planda calisir.
-    Durumu GET /api/scan/status ile takip et.
-    Bittikten sonra GET /api/detections guncel sonuclari dondurur.
+    GET /api/scan/status ile takip et, GET /api/detections ile sonucu al.
     """
-    if _scan_status["running"]:
-        return jsonify({"error": "Scan zaten calisiyor. /api/scan/status ile kontrol edin."}), 409
+    with _scan_lock:
+        if _scan_status["running"]:
+            return jsonify({"error": "Scan zaten calisiyor. /api/scan/status ile kontrol edin."}), 409
 
     body = request.get_json(silent=True) or {}
     demo_fallback: bool = bool(body.get("demo_fallback", False))
@@ -135,25 +129,24 @@ def trigger_scan() -> Response:
         cmd += ["--api-key", api_key]
 
     def _run() -> None:
-        _scan_status["running"] = True
-        _scan_status["last_result"] = None
         env = {**os.environ}
         if api_key:
             env["STREET_VIEW_API_KEY"] = api_key
         result = subprocess.run(cmd, capture_output=True, text=True, env=env)
-        _scan_status["running"] = False
-        _scan_status["last_result"] = {
-            "returncode": result.returncode,
-            "stdout": result.stdout[-2000:] if result.stdout else "",
-            "stderr": result.stderr[-1000:] if result.stderr else "",
-        }
+        with _scan_lock:
+            _scan_status["running"] = False
+            _scan_status["last_result"] = {
+                "returncode": result.returncode,
+                "stdout": result.stdout[-2000:] if result.stdout else "",
+                "stderr": result.stderr[-1000:] if result.stderr else "",
+            }
 
-    if _scan_lock.acquire(blocking=False):
-        t = threading.Thread(target=_run, daemon=True)
-        t.start()
-        _scan_lock.release()
-    else:
-        return jsonify({"error": "Scan baslatilamadi (kilit alinamadi)."}), 500
+    with _scan_lock:
+        _scan_status["running"] = True
+        _scan_status["last_result"] = None
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
 
     return jsonify({
         "status": "accepted",

@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: ai-privacy-pipeline
+    runtime: docker
+    dockerfilePath: ai-pipeline/Dockerfile
+    dockerContext: ai-pipeline
+    plan: free
+    envVars:
+      - key: STREET_VIEW_API_KEY
+        sync: false   # Render dashboard'dan manuel gir
+    healthCheckPath: /health
+    autoDeploy: false

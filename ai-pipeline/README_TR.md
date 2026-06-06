@@ -171,6 +171,51 @@ python scripts\run_pipeline.py --input data\input\demo.mp4 --lat 41.021 --lng 28
 
 Silme scripti yalnizca `ai-pipeline/data` altindaki klasorleri silebilir.
 
+## Hackathon Demo (Tek Komut)
+
+Sunumda tum pipeline'i, JSON ciktisini ve HTTP API'yi gostermek icin:
+
+```powershell
+cd ai-pipeline
+
+# Offline demo (API key gerekmez, YOLO gerekmez):
+.\demo.ps1
+
+# Gercek Street View ile:
+.\demo.ps1 YOUR_GOOGLE_API_KEY
+```
+
+Script sirasyla:
+1. Sentetik demo video olusturur
+2. Anonymize → detect → dedupe pipeline'ini calistirir
+3. Tespit sonuclarini terminale yazar
+4. `http://localhost:8000` adresinde HTTP API sunucusunu baslatir
+
+---
+
+## Render.com Deployment (HTTP API)
+
+Go backend'in `POST /api/scan` ve `GET /api/detections` cagirabilmesi icin
+serve.py'i Render.com'a deploy et:
+
+1. GitHub repo'ya push'la (zaten yapildi)
+2. [render.com/new](https://render.com/new) → "New Web Service" → repo sec
+3. `render.yaml` otomatik algilanir
+4. Environment Variables → `STREET_VIEW_API_KEY` degerini gir
+5. Deploy
+
+Deploy sonrasi Go backend'den:
+
+```go
+// Scan tetikle
+http.Post("https://ai-privacy-pipeline.onrender.com/api/scan", ...)
+
+// Sonuc al
+http.Get("https://ai-privacy-pipeline.onrender.com/api/detections")
+```
+
+---
+
 ## Smoke Test
 
 Tum demo hattini, JSON validasyonunu ve silme guvenlik sinirini test etmek icin:

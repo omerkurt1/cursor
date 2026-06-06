@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import json
+import socket
 import subprocess
 import sys
 import tempfile
 import shutil
+import time
+import urllib.request
 from pathlib import Path
 
 
@@ -20,6 +24,77 @@ def run(command: list[str], cwd: Path = PROJECT_ROOT, expect_success: bool = Tru
     if not expect_success and result.returncode == 0:
         raise RuntimeError(f"Komut basarili olmamaliydi: {' '.join(command)}")
     return result
+
+
+def _free_port() -> int:
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        return s.getsockname()[1]
+
+
+def test_serve_endpoints(detections_json: Path, pipeline_report_json: Path) -> None:
+    """serve.py'i geçici portta baslatir ve GET endpointlerini dogrular."""
+    port = _free_port()
+    env_copy = {**__import__("os").environ}
+    proc = subprocess.Popen(
+        [PYTHON, "scripts/serve.py", "--port", str(port)],
+        cwd=PROJECT_ROOT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        env=env_copy,
+    )
+    try:
+        # Sunucu hazir olana kadar bekle (max 10s)
+        base = f"http://127.0.0.1:{port}"
+        for _ in range(20):
+            try:
+                urllib.request.urlopen(f"{base}/health", timeout=1)
+                break
+            except Exception:
+                time.sleep(0.5)
+        else:
+            raise RuntimeError("serve.py 10 saniyede baslamadi.")
+
+        # /health
+        resp = urllib.request.urlopen(f"{base}/health")
+        data = json.loads(resp.read())
+        assert data["status"] == "ok", f"health yaniti beklenmiyor: {data}"
+        assert data["service"] == "ai-privacy-pipeline"
+        print("  [OK] GET /health")
+
+        # /api/detections
+        resp = urllib.request.urlopen(f"{base}/api/detections")
+        detections = json.loads(resp.read())
+        assert isinstance(detections, list), "detections liste olmali"
+        print(f"  [OK] GET /api/detections ({len(detections)} kayit)")
+
+        # /api/pipeline-report
+        resp = urllib.request.urlopen(f"{base}/api/pipeline-report")
+        report = json.loads(resp.read())
+        assert "privacy_guardrails" in report
+        print("  [OK] GET /api/pipeline-report")
+
+        # /api/scan/status
+        resp = urllib.request.urlopen(f"{base}/api/scan/status")
+        status = json.loads(resp.read())
+        assert "running" in status
+        print("  [OK] GET /api/scan/status")
+
+        # POST /api/scan - 409 beklenmez, 202 beklenir
+        scan_body = json.dumps({"lat": 41.021, "lng": 28.874, "demo_fallback": True, "demo_no_api": True}).encode()
+        req = urllib.request.Request(
+            f"{base}/api/scan",
+            data=scan_body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        resp = urllib.request.urlopen(req)
+        assert resp.status == 202, f"POST /api/scan 202 bekleniyor, {resp.status} geldi"
+        print("  [OK] POST /api/scan -> 202 Accepted")
+
+    finally:
+        proc.terminate()
+        proc.wait(timeout=5)
 
 
 def test_route_pipeline_offline() -> None:
@@ -130,10 +205,10 @@ def main() -> None:
     output_dir = PROJECT_ROOT / "output" / "smoke"
     report_dir = PROJECT_ROOT / "reports" / "smoke"
 
-    print("1/7 Demo video olusturuluyor...")
+    print("1/8 Demo video olusturuluyor...")
     run([PYTHON, "scripts/create_demo_video.py", "--output", str(input_video)])
 
-    print("2/7 Pipeline calistiriliyor...")
+    print("2/8 Pipeline calistiriliyor...")
     run(
         [
             PYTHON,
@@ -147,7 +222,7 @@ def main() -> None:
         ]
     )
 
-    print("3/7 Cikti validasyonu...")
+    print("3/8 Cikti validasyonu...")
     run(
         [
             PYTHON,
@@ -157,7 +232,7 @@ def main() -> None:
         ]
     )
 
-    print("4/7 Silme guvenlik siniri testi...")
+    print("4/8 Silme guvenlik siniri testi...")
     run(
         [
             PYTHON,
@@ -169,7 +244,7 @@ def main() -> None:
         expect_success=False,
     )
 
-    print("5/7 Fail-closed testleri...")
+    print("5/8 Fail-closed testleri...")
     test_fail_closed_on_missing_video()
     tmp_dir = Path(tempfile.mkdtemp())
     try:
@@ -177,15 +252,21 @@ def main() -> None:
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
-    print("6/7 Street View API guard testleri...")
+    print("6/8 Street View API guard testleri...")
     tmp_dir2 = Path(tempfile.mkdtemp())
     try:
         test_street_view_no_api_key(tmp_dir2)
     finally:
         shutil.rmtree(tmp_dir2, ignore_errors=True)
 
-    print("7/7 Rota pipeline offline demo testi...")
+    print("7/8 Rota pipeline offline demo testi...")
     test_route_pipeline_offline()
+
+    print("8/8 HTTP API endpoint testleri...")
+    test_serve_endpoints(
+        detections_json=output_dir / "detections.json",
+        pipeline_report_json=report_dir / "pipeline_report.json",
+    )
 
     print("Smoke test basarili.")
 
