@@ -144,6 +144,35 @@
               <div id="pipeline-status" class="import-status" role="status">
                 Live pipeline not connected.
               </div>
+
+              <div class="route-scan-panel">
+                <p class="eyebrow">Route scan</p>
+                <strong>Trigger a route scan</strong>
+                <p>
+                  Send a scan request to the local pipeline and refresh map
+                  detections. Primary source: Municipal vehicle cameras.
+                </p>
+                <label class="api-url-label" for="scan-route-name">
+                  Route / location
+                  <input
+                    id="scan-route-name"
+                    type="text"
+                    value="route-a"
+                    spellcheck="false"
+                  />
+                </label>
+                <button id="trigger-scan" class="import-button scan-button" type="button">
+                  Trigger Scan
+                </button>
+                <div id="scan-status" class="import-status" role="status">
+                  No scan in progress.
+                </div>
+                <p class="source-note">
+                  <strong>Primary source:</strong> Municipal vehicle cameras ·
+                  <em>Street View images are a dev fallback only</em>
+                </p>
+              </div>
+
               <div class="import-divider"><span>or use file</span></div>
               <label class="import-button" for="detection-import">
                 Import detection JSON

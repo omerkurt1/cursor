@@ -299,6 +299,21 @@ describe("normalizeLocalApiUrl", () => {
     );
     expect(() => normalizeLocalApiUrl("not-a-url")).toThrow(/valid URL/i);
   });
+
+  it("blocks route-scan requests to non-local hosts", () => {
+    expect(() =>
+      normalizeLocalApiUrl("http://api.example.com/api/scan"),
+    ).toThrow(/local machine/i);
+    expect(() =>
+      normalizeLocalApiUrl("http://192.168.1.1:8000"),
+    ).toThrow(/local machine/i);
+  });
+
+  it("blocks https even for localhost (scan calls must use plain HTTP)", () => {
+    expect(() =>
+      normalizeLocalApiUrl("https://localhost:8000"),
+    ).toThrow(/local machine/i);
+  });
 });
 
 describe("normalizePipelineReport", () => {

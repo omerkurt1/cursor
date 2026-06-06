@@ -312,8 +312,8 @@ function renderPipelineEvidence() {
     : "Awaiting proof";
   document.querySelector("#evidence-source").textContent = pipelineReport
     ? pipelineReport.source === "google_street_view"
-      ? "Street View fallback"
-      : "Vehicle camera"
+      ? "Dev fallback — Street View"
+      : "Municipal vehicle cameras"
     : "—";
   document.querySelector("#evidence-frames").textContent =
     pipelineReport?.processedFrames ?? "—";
@@ -404,6 +404,65 @@ async function connectPipeline() {
   }
 }
 
+async function triggerScan() {
+  const status = document.querySelector("#scan-status");
+  const button = document.querySelector("#trigger-scan");
+  const routeName =
+    document.querySelector("#scan-route-name").value.trim() || "route-a";
+
+  button.disabled = true;
+  status.textContent = "Scanning route…";
+  status.dataset.state = "";
+
+  let baseUrl;
+  try {
+    baseUrl = normalizeLocalApiUrl(
+      document.querySelector("#pipeline-api-url").value,
+    );
+  } catch (error) {
+    status.textContent = error.message;
+    status.dataset.state = "error";
+    button.disabled = false;
+    return;
+  }
+
+  try {
+    const scanResponse = await fetch(`${baseUrl}/api/scan`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ route: routeName }),
+      cache: "no-store",
+    });
+    if (!scanResponse.ok) {
+      const body = await scanResponse.json().catch(() => ({}));
+      throw new Error(
+        body.error || `Scan request failed (${scanResponse.status}).`,
+      );
+    }
+
+    detections = normalizePipelineDetections(
+      await fetchJson(`${baseUrl}/api/detections`, "Detections"),
+    );
+    selectedId = detections[0]?.id;
+    populateDistricts();
+    resetFilters();
+    render();
+
+    status.textContent = `Scan complete — ${detections.length} detection(s) refreshed.`;
+    status.dataset.state = "success";
+  } catch {
+    status.textContent = "API offline — showing demo data";
+    status.dataset.state = "error";
+    detections = createDemoDetections(sampleDetections);
+    selectedId = detections[0]?.id;
+    populateDistricts();
+    resetFilters();
+    render();
+  } finally {
+    button.disabled = false;
+  }
+}
+
 function bindControls() {
   ["district", "type", "priority", "status"].forEach((key) => {
     document.querySelector(`#${key}-filter`).addEventListener("change", (event) => {
@@ -445,6 +504,10 @@ function bindControls() {
   document
     .querySelector("#connect-pipeline")
     .addEventListener("click", connectPipeline);
+
+  document
+    .querySelector("#trigger-scan")
+    .addEventListener("click", triggerScan);
 
   document.querySelector("#issue-list").addEventListener("click", (event) => {
     const item = event.target.closest("[data-detection-id]");

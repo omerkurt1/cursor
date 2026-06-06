@@ -425,6 +425,50 @@ h2 {
   letter-spacing: 0.08em;
 }
 
+.route-scan-panel {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(0, 75, 70, 0.04);
+}
+
+.route-scan-panel > strong {
+  display: block;
+  font-size: 13px;
+}
+
+.route-scan-panel > p:not(.eyebrow) {
+  margin: 7px 0 13px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.scan-button {
+  background: var(--teal-dark);
+}
+
+.scan-button:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.source-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.source-note strong {
+  color: var(--teal-dark);
+}
+
+.source-note em {
+  font-style: normal;
+  color: var(--orange);
+}
+
 .restore-button {
   width: 100%;
   margin-top: 7px;
