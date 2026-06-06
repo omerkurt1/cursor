@@ -2,9 +2,8 @@
 
 import dynamic from "next/dynamic";
 
-// The Google Maps / Street View setup touches `window` and the DOM, so the
-// dashboard must only ever load on the client. Disabling SSR keeps the map code
-// out of the server bundle.
+// The Leaflet map touches `window` and the DOM, so the dashboard must only ever
+// load on the client. Disabling SSR keeps the map code out of the server bundle.
 const Dashboard = dynamic(() => import("../components/Dashboard.jsx"), {
   ssr: false,
 });
