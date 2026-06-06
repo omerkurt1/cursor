@@ -804,38 +804,15 @@ export default function Dashboard() {
           });
         });
 
-      // Import
+      // Import (hidden, kept for JS compatibility)
       document
         .querySelector("#detection-import")
-        .addEventListener("change", (e) => {
+        ?.addEventListener("change", (e) => {
           const [f] = e.target.files;
           if (f) importDetections(f);
           e.target.value = "";
         });
 
-      document.querySelector("#restore-demo").addEventListener("click", () => {
-        detections = createDemoDetections(sampleDetections);
-        selectedId = detections[0]?.id;
-        deletionReport = null;
-        pipelineReport = null;
-        populateDistricts();
-        resetFilters();
-        render();
-        renderDeletionProof();
-        renderPipelineEvidence();
-        showImportStatus("Built-in demonstration dataset restored.", "success");
-        setConnectionStatus(false);
-        document.querySelector("#deletion-status").textContent =
-          "Waiting for raw-data deletion proof.";
-        document.querySelector("#deletion-status").dataset.state = "";
-        document.querySelector("#pipeline-status").textContent =
-          "Live pipeline not connected.";
-        document.querySelector("#pipeline-status").dataset.state = "";
-      });
-
-      document
-        .querySelector("#connect-pipeline")
-        .addEventListener("click", connectPipeline);
       document
         .querySelector("#trigger-scan")
         .addEventListener("click", triggerScan);
@@ -884,6 +861,9 @@ export default function Dashboard() {
     render();
     renderDeletionProof();
     renderPipelineEvidence();
+
+    // Auto-connect to the local AI pipeline on load
+    connectPipeline();
 
     // ── Cleanup ─────────────────────────────────────────────────────────────
     return () => {
@@ -978,33 +958,13 @@ export default function Dashboard() {
               <div className="cat-bars" id="cat-bars"></div>
             </div>
 
-            {/* AI Integration */}
+            {/* Route Scan */}
             <div className="sidebar-section import-panel">
-              <p className="eyebrow">AI integration</p>
-              <strong>Connect local pipeline</strong>
-              <p>Connect to Mert's local API. Remote hosts are hard-rejected.</p>
-              <label className="field-label" htmlFor="pipeline-api-url">
-                Local API address
-                <input
-                  id="pipeline-api-url"
-                  type="url"
-                  defaultValue="http://127.0.0.1:8000"
-                  spellCheck="false"
-                />
-              </label>
-              <button id="connect-pipeline" className="btn-primary" type="button">
-                Connect live pipeline
-              </button>
-              <div id="pipeline-status" className="status-msg" role="status">
-                Live pipeline not connected.
-              </div>
-
-              {/* Route scan panel */}
               <div className="route-scan-panel">
                 <p className="eyebrow">Route scan</p>
                 <strong>Trigger a district scan</strong>
                 <p>
-                  Send a scan to the local pipeline and refresh map detections.
+                  Send a scan to the pipeline and refresh map detections.
                   <br />
                   <span className="source-badge">
                     Primary: Municipal vehicle cameras
@@ -1178,11 +1138,6 @@ export default function Dashboard() {
                   Single point
                 </span>
 
-                <label className="scan-demo-label">
-                  <input id="scan-demo-fallback" type="checkbox" defaultChecked />
-                  Use demo fallback (dev mode)
-                </label>
-
                 <button id="trigger-scan" className="btn-scan" type="button">
                   Trigger Scan
                 </button>
@@ -1208,23 +1163,19 @@ export default function Dashboard() {
                 </p>
               </div>
 
-              <div className="import-divider">
-                <span>or use file</span>
-              </div>
-              <label className="btn-import" htmlFor="detection-import">
-                Import detection JSON
-              </label>
-              <button id="restore-demo" className="btn-restore" type="button">
-                Restore built-in demo
-              </button>
+              {/* Hidden elements needed by JS */}
+              <input
+                id="pipeline-api-url"
+                type="hidden"
+                defaultValue="http://127.0.0.1:8000"
+              />
               <input
                 id="detection-import"
                 type="file"
                 accept="application/json,.json"
               />
-              <div id="import-status" className="status-msg" role="status">
-                Using the built-in demonstration dataset.
-              </div>
+              <div id="pipeline-status" className="status-msg" role="status" style={{ display: 'none' }}></div>
+              <div id="import-status" className="status-msg" role="status" style={{ display: 'none' }}></div>
             </div>
 
             <div className="privacy-card">
