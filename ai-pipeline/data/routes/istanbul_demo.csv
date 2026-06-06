@@ -1,0 +1,8 @@
+# Istanbul demo rotasi - Besiktas -> Sisli arasi kisa guzergah
+# Format: enlem,boylam (her satir bir durak)
+# Her nokta icin 4 yon (0,90,180,270 derece) Street View goruntuleri cekilir
+41.0430,29.0057
+41.0441,29.0048
+41.0452,29.0039
+41.0463,29.0030
+41.0472,29.0021

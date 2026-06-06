@@ -68,6 +68,15 @@ def validate_pipeline_report_file(path: Path) -> dict:
     }
     missing_keys = required_keys - set(report)
     require(not missing_keys, f"Pipeline raporu eksik alanlar: {sorted(missing_keys)}")
+    # input_video ve anonymized_video rota pipeline'inda None olabilir
+    require(
+        isinstance(report["input_video"], (str, type(None))),
+        "input_video metin veya null olmali",
+    )
+    require(
+        isinstance(report["anonymized_video"], (str, type(None))),
+        "anonymized_video metin veya null olmali",
+    )
 
     guardrails = report["privacy_guardrails"]
     require(isinstance(guardrails, dict), "privacy_guardrails obje olmali")

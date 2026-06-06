@@ -19,33 +19,90 @@ python scripts\serve.py --port 8000
 | GET | `/api/detections` | Temizlenmis tespit listesi (JSON) |
 | GET | `/api/pipeline-report` | Pipeline ozet raporu (KVKK kaniti dahil) |
 | GET | `/api/deletion-report` | Ham veri silme raporu |
+| GET | `/api/scan/status` | Devam eden scan durumu |
+| POST | `/api/scan` | Yeni scan tetikle (Go backend buraya yazar) |
 
-### GET /api/detections
+---
 
-Ornek istek (Go backend):
+### POST /api/scan — Go Backend Icin Scan Tetikleyici
+
+Go backend bu endpoint'e istek atarak Street View taramasini baslatir.
+Pipeline arka planda calisir, sonuc `GET /api/detections` ile alinir.
+
+**Tek nokta taramasi:**
+
+```go
+body := `{"lat": 41.021, "lng": 28.874, "demo_fallback": false}`
+resp, err := http.Post(
+    "http://localhost:8000/api/scan",
+    "application/json",
+    strings.NewReader(body),
+)
+// 202 Accepted -> arka planda baslatildi
+```
+
+**Rota taramasi (birden fazla nokta):**
+
+```go
+body := `{
+    "waypoints": [
+        {"lat": 41.043, "lng": 29.005},
+        {"lat": 41.044, "lng": 29.004},
+        {"lat": 41.045, "lng": 29.003}
+    ],
+    "demo_fallback": false
+}`
+resp, err := http.Post("http://localhost:8000/api/scan", "application/json", strings.NewReader(body))
+```
+
+**Demo modu (API key veya YOLO olmadan):**
+
+```go
+body := `{"lat": 41.021, "lng": 28.874, "demo_fallback": true, "demo_no_api": true}`
+```
+
+**Scan durumu sorgulama:**
+
+```go
+resp, err := http.Get("http://localhost:8000/api/scan/status")
+// {"running": true/false, "last_result": {...}}
+```
+
+**Scan bittikten sonra sonuclari al:**
 
 ```go
 resp, err := http.Get("http://localhost:8000/api/detections")
 ```
 
-Ornek yanit:
+**202 yanit ornegi:**
+
+```json
+{
+  "status": "accepted",
+  "message": "Scan arka planda baslatildi.",
+  "poll": "/api/scan/status",
+  "result": "/api/detections"
+}
+```
+
+---
+
+### GET /api/detections
+
+Ornek yanit (rota taramasindan):
 
 ```json
 [
-  {
-    "type": "traffic_sign",
-    "latitude": 41.021,
-    "longitude": 28.874,
-    "confidence": 0.91,
-    "timestamp": "00:00:03"
-  }
+  {"type": "traffic_sign",  "latitude": 41.043, "longitude": 29.005, "confidence": 0.91, "timestamp": "00:00:03"},
+  {"type": "traffic_light", "latitude": 41.044, "longitude": 29.004, "confidence": 0.87, "timestamp": "00:00:18"},
+  {"type": "pothole",       "latitude": 41.045, "longitude": 29.003, "confidence": 0.73, "timestamp": "00:00:11"}
 ]
 ```
 
 ### GET /health
 
 ```json
-{"status": "ok", "service": "ai-privacy-pipeline"}
+{"status": "ok", "service": "ai-privacy-pipeline", "scan_running": false}
 ```
 
 ---

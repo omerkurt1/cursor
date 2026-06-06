@@ -5,5 +5,33 @@
     "longitude": 28.874,
     "confidence": 0.91,
     "timestamp": "00:00:03"
+  },
+  {
+    "type": "traffic_light",
+    "latitude": 41.0215,
+    "longitude": 28.8748,
+    "confidence": 0.87,
+    "timestamp": "00:00:18"
+  },
+  {
+    "type": "traffic_sign",
+    "latitude": 41.022,
+    "longitude": 28.876,
+    "confidence": 0.79,
+    "timestamp": "00:00:03"
+  },
+  {
+    "type": "pothole",
+    "latitude": 41.0225,
+    "longitude": 28.8765,
+    "confidence": 0.73,
+    "timestamp": "00:00:11"
+  },
+  {
+    "type": "damaged_sign",
+    "latitude": 41.023,
+    "longitude": 28.878,
+    "confidence": 0.68,
+    "timestamp": "00:00:03"
   }
 ]

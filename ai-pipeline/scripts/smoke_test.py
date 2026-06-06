@@ -22,6 +22,34 @@ def run(command: list[str], cwd: Path = PROJECT_ROOT, expect_success: bool = Tru
     return result
 
 
+def test_route_pipeline_offline() -> None:
+    """route_pipeline --demo-no-api --demo-fallback ile API key olmadan calisir."""
+    output_dir = PROJECT_ROOT / "output" / "smoke_route"
+    report_dir = PROJECT_ROOT / "reports" / "smoke_route"
+    result = subprocess.run(
+        [
+            PYTHON,
+            "scripts/route_pipeline.py",
+            "--waypoints", "41.021,28.874;41.022,28.876",
+            "--demo-no-api",
+            "--demo-fallback",
+            "--output-dir", str(output_dir),
+            "--report-dir", str(report_dir),
+        ],
+        cwd=PROJECT_ROOT,
+        text=True,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        print(result.stdout)
+        print(result.stderr, file=sys.stderr)
+        raise RuntimeError("route_pipeline offline demo basarisiz.")
+    detections_file = output_dir / "detections.json"
+    if not detections_file.exists():
+        raise RuntimeError(f"detections.json olusturulamadi: {detections_file}")
+    print("  [OK] route_pipeline: 2 konum offline -> detections.json uretildi.")
+
+
 def test_fail_closed_on_missing_video() -> None:
     """Fail-closed: var olmayan video verildiginde pipeline exit(1) ile durdurulur."""
     result = subprocess.run(
@@ -102,10 +130,10 @@ def main() -> None:
     output_dir = PROJECT_ROOT / "output" / "smoke"
     report_dir = PROJECT_ROOT / "reports" / "smoke"
 
-    print("1/6 Demo video olusturuluyor...")
+    print("1/7 Demo video olusturuluyor...")
     run([PYTHON, "scripts/create_demo_video.py", "--output", str(input_video)])
 
-    print("2/6 Pipeline calistiriliyor...")
+    print("2/7 Pipeline calistiriliyor...")
     run(
         [
             PYTHON,
@@ -119,7 +147,7 @@ def main() -> None:
         ]
     )
 
-    print("3/6 Cikti validasyonu...")
+    print("3/7 Cikti validasyonu...")
     run(
         [
             PYTHON,
@@ -129,7 +157,7 @@ def main() -> None:
         ]
     )
 
-    print("4/6 Silme guvenlik siniri testi...")
+    print("4/7 Silme guvenlik siniri testi...")
     run(
         [
             PYTHON,
@@ -141,7 +169,7 @@ def main() -> None:
         expect_success=False,
     )
 
-    print("5/6 Fail-closed testleri...")
+    print("5/7 Fail-closed testleri...")
     test_fail_closed_on_missing_video()
     tmp_dir = Path(tempfile.mkdtemp())
     try:
@@ -149,12 +177,15 @@ def main() -> None:
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
-    print("6/6 Street View API guard testleri...")
+    print("6/7 Street View API guard testleri...")
     tmp_dir2 = Path(tempfile.mkdtemp())
     try:
         test_street_view_no_api_key(tmp_dir2)
     finally:
         shutil.rmtree(tmp_dir2, ignore_errors=True)
+
+    print("7/7 Rota pipeline offline demo testi...")
+    test_route_pipeline_offline()
 
     print("Smoke test basarili.")
 
