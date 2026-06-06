@@ -111,6 +111,8 @@ const allowedTypes = new Set([
   "road_damage",
   "damaged_sign",
   "overflowing_container",
+  "traffic_sign",
+  "traffic_light",
 ]);
 const allowedPriorities = new Set(["high", "medium", "low"]);
 const allowedStatuses = new Set(["new", "assigned", "resolved"]);
@@ -187,4 +189,76 @@ export function validateDetectionImport(value) {
 
   value.forEach(validateDetection);
   return value;
+}
+
+const pipelineFields = new Set([
+  "type",
+  "latitude",
+  "longitude",
+  "confidence",
+  "timestamp",
+]);
+const pipelineTypes = new Set(["traffic_sign", "traffic_light"]);
+
+function pipelineTimestampSeconds(timestamp) {
+  if (typeof timestamp !== "string" || !/^\d{2}:\d{2}:\d{2}$/.test(timestamp)) {
+    throw new Error('Pipeline "timestamp" must use HH:MM:SS format.');
+  }
+
+  const [hours, minutes, seconds] = timestamp.split(":").map(Number);
+  if (minutes > 59 || seconds > 59) {
+    throw new Error('Pipeline "timestamp" must use HH:MM:SS format.');
+  }
+  return hours * 3600 + minutes * 60 + seconds;
+}
+
+export function normalizePipelineDetections(
+  value,
+  { district = "Unassigned", baseDate = new Date().toISOString() } = {},
+) {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error("Pipeline import must contain a non-empty detection array.");
+  }
+
+  const start = new Date(baseDate);
+  if (Number.isNaN(start.getTime())) {
+    throw new Error("Pipeline import requires a valid base date.");
+  }
+
+  const normalized = value.map((detection, index) => {
+    if (!detection || typeof detection !== "object" || Array.isArray(detection)) {
+      throw new Error(`Pipeline detection ${index + 1} must be an object.`);
+    }
+    Object.keys(detection).forEach((field) => {
+      if (!pipelineFields.has(field)) {
+        throw new Error(
+          `Pipeline detection ${index + 1}: unexpected field "${field}".`,
+        );
+      }
+    });
+    if (!pipelineTypes.has(detection.type)) {
+      throw new Error(
+        `Pipeline detection ${index + 1}: unsupported pipeline type "${detection.type}".`,
+      );
+    }
+
+    const detectedAt = new Date(
+      start.getTime() + pipelineTimestampSeconds(detection.timestamp) * 1000,
+    ).toISOString();
+    const adapted = {
+      id: `AI-${String(index + 1).padStart(3, "0")}`,
+      district,
+      type: detection.type,
+      latitude: detection.latitude,
+      longitude: detection.longitude,
+      confidence: detection.confidence,
+      priority: detection.confidence >= 0.9 ? "high" : detection.confidence >= 0.75 ? "medium" : "low",
+      status: "new",
+      detectedAt,
+    };
+    validateDetection(adapted, index);
+    return adapted;
+  });
+
+  return normalized;
 }

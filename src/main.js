@@ -8,6 +8,7 @@ import {
   filterDetections,
   getRoutePoints,
   normalizeDeletionReport,
+  normalizePipelineDetections,
   updateDetectionStatus,
   validateDetectionImport,
 } from "./dashboard.js";
@@ -17,18 +18,24 @@ const labels = {
   road_damage: "Road damage",
   damaged_sign: "Damaged sign",
   overflowing_container: "Overflowing container",
+  traffic_sign: "Traffic sign",
+  traffic_light: "Traffic light",
 };
 
 const colors = {
   road_damage: "#e14f2a",
   damaged_sign: "#f0a202",
   overflowing_container: "#007f73",
+  traffic_sign: "#3974a8",
+  traffic_light: "#7655a3",
 };
 
 const actions = {
   road_damage: "Create a road maintenance inspection task.",
   damaged_sign: "Dispatch a signage team to assess and replace.",
   overflowing_container: "Prioritize the location for waste collection.",
+  traffic_sign: "Create a traffic-sign inventory verification task.",
+  traffic_light: "Create a traffic-signal inspection task.",
 };
 
 const filters = {
@@ -239,13 +246,24 @@ function showImportStatus(message, state) {
 async function importDetections(file) {
   try {
     const parsed = JSON.parse(await file.text());
-    detections = [...validateDetectionImport(parsed)];
+    const isPipelineOutput =
+      Array.isArray(parsed) &&
+      parsed.length > 0 &&
+      Object.hasOwn(parsed[0], "timestamp") &&
+      !Object.hasOwn(parsed[0], "detectedAt");
+    const baseDate = new Date();
+    baseDate.setHours(0, 0, 0, 0);
+    detections = isPipelineOutput
+      ? normalizePipelineDetections(parsed, { baseDate: baseDate.toISOString() })
+      : [...validateDetectionImport(parsed)];
     selectedId = detections[0]?.id;
     populateDistricts();
     resetFilters();
     render();
     showImportStatus(
-      `${detections.length} privacy-safe detections loaded from ${file.name}.`,
+      `${detections.length} privacy-safe detections loaded from ${file.name}${
+        isPipelineOutput ? " using the AI pipeline adapter" : ""
+      }.`,
       "success",
     );
   } catch (error) {

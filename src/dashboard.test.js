@@ -5,6 +5,7 @@ import {
   getRoutePoints,
   buildComplianceSummary,
   createDemoDetections,
+  normalizePipelineDetections,
   normalizeDeletionReport,
   updateDetectionStatus,
   validateDetectionImport,
@@ -203,5 +204,65 @@ describe("createDemoDetections", () => {
       detections[2],
     ]);
     expect(detections[0].status).toBe("new");
+  });
+});
+
+describe("normalizePipelineDetections", () => {
+  it("converts minimized AI pipeline output into dashboard records", () => {
+    expect(
+      normalizePipelineDetections(
+        [
+          {
+            type: "traffic_sign",
+            latitude: 41.021,
+            longitude: 28.874,
+            confidence: 0.91,
+            timestamp: "00:01:24",
+          },
+        ],
+        { district: "Unassigned", baseDate: "2026-06-06T00:00:00Z" },
+      ),
+    ).toEqual([
+      {
+        id: "AI-001",
+        district: "Unassigned",
+        type: "traffic_sign",
+        latitude: 41.021,
+        longitude: 28.874,
+        confidence: 0.91,
+        priority: "high",
+        status: "new",
+        detectedAt: "2026-06-06T00:01:24.000Z",
+      },
+    ]);
+  });
+
+  it("rejects extra pipeline fields before adapting", () => {
+    expect(() =>
+      normalizePipelineDetections([
+        {
+          type: "traffic_sign",
+          latitude: 41.021,
+          longitude: 28.874,
+          confidence: 0.91,
+          timestamp: "00:01:24",
+          plate: "34 ABC 123",
+        },
+      ]),
+    ).toThrow(/unexpected field "plate"/i);
+  });
+
+  it("rejects object types outside the pipeline contract", () => {
+    expect(() =>
+      normalizePipelineDetections([
+        {
+          type: "road_damage",
+          latitude: 41.021,
+          longitude: 28.874,
+          confidence: 0.91,
+          timestamp: "00:01:24",
+        },
+      ]),
+    ).toThrow(/unsupported pipeline type/i);
   });
 });

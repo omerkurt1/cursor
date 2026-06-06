@@ -1,0 +1,16 @@
+[
+  {
+    "type": "traffic_sign",
+    "latitude": 41.021,
+    "longitude": 28.874,
+    "confidence": 0.91,
+    "timestamp": "00:01:24"
+  },
+  {
+    "type": "traffic_light",
+    "latitude": 41.024,
+    "longitude": 28.879,
+    "confidence": 0.86,
+    "timestamp": "00:02:08"
+  }
+]

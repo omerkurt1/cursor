@@ -597,6 +597,7 @@ h2 {
 .dot.road { background: var(--orange); }
 .dot.sign { background: var(--yellow); }
 .dot.waste { background: var(--teal); }
+.dot.traffic { background: #3974a8; }
 
 .route-key {
   width: 18px;

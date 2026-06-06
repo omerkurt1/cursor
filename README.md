@@ -18,6 +18,8 @@ Open `http://localhost:5173`.
 2. Explain the route, issue markers, filters, and municipal KPIs.
 3. Select an issue and assign or resolve it.
 4. Import `examples/detections-import-example.json` as the AI handoff.
+   The current minimal pipeline output is also accepted through
+   `examples/ai-pipeline-output-example.json`.
 5. Import `examples/deletion-report-example.json` as deletion proof.
 6. Export the minimized compliance summary.
 7. Use **Restore built-in demo** before another presentation run.
@@ -44,3 +46,4 @@ These branches build on each other and should be merged in this order:
 3. `codex/municipal-action-workflow`
 4. `codex/compliance-audit-export`
 5. `codex/demo-readiness`
+6. `codex/ai-pipeline-adapter`

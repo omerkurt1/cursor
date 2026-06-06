@@ -27,3 +27,18 @@ Use `examples/detections-import-example.json` as the working example.
 
 The dashboard rejects unknown fields to enforce data minimization. A rejected
 import does not replace the previously loaded dataset.
+
+## Minimal Pipeline Adapter
+
+For the current AI prototype, the dashboard also accepts an exact minimized
+five-field record containing `type`, `latitude`, `longitude`, `confidence`, and
+`timestamp`. The adapter:
+
+- accepts only `traffic_sign` and `traffic_light` object types;
+- rejects every extra field;
+- assigns a generated ID, `Unassigned` district, `new` status, and priority
+  derived from confidence;
+- converts the video-relative `HH:MM:SS` timestamp into the current demo day's
+  date and time.
+
+Use `examples/ai-pipeline-output-example.json` as the adapter example.

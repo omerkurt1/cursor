@@ -16,6 +16,7 @@
 3. **Map:** Show city-wide detections and the scanned route.
 4. **Action:** Select a high-priority issue, assign it, then resolve it.
 5. **AI handoff:** Import the privacy-safe detection JSON.
+   The dashboard automatically adapts the current five-field AI pipeline output.
 6. **Compliance:** Import deletion proof and export the minimized audit summary.
 7. **Close:** UrbanPulse helps municipalities see earlier, respond faster, and
    use existing public resources more effectively.
