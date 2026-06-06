@@ -30,6 +30,16 @@ The AI pipeline must produce JSON matching
 `docs/person-1-output-contract.md`. The dashboard rejects unknown and forbidden
 personal-data fields before rendering.
 
+For live local integration:
+
+```powershell
+cd ai-pipeline
+python scripts\serve.py --host 127.0.0.1 --port 8000
+```
+
+Then click **Connect live pipeline** in the dashboard. The dashboard intentionally
+rejects remote API hosts.
+
 ## Verification
 
 ```powershell
@@ -47,6 +57,7 @@ These branches build on each other and should be merged in this order:
 4. `codex/omer-compliance-audit-export`
 5. `codex/omer-demo-readiness`
 6. `codex/omer-ai-pipeline-adapter`
+7. `codex/omer-live-api-connection`
 
 ## Branch Ownership
 

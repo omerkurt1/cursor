@@ -198,7 +198,12 @@ const pipelineFields = new Set([
   "confidence",
   "timestamp",
 ]);
-const pipelineTypes = new Set(["traffic_sign", "traffic_light"]);
+const pipelineTypeMap = new Map([
+  ["traffic_sign", "traffic_sign"],
+  ["traffic_light", "traffic_light"],
+  ["pothole", "road_damage"],
+  ["damaged_sign", "damaged_sign"],
+]);
 
 function pipelineTimestampSeconds(timestamp) {
   if (typeof timestamp !== "string" || !/^\d{2}:\d{2}:\d{2}$/.test(timestamp)) {
@@ -236,7 +241,7 @@ export function normalizePipelineDetections(
         );
       }
     });
-    if (!pipelineTypes.has(detection.type)) {
+    if (!pipelineTypeMap.has(detection.type)) {
       throw new Error(
         `Pipeline detection ${index + 1}: unsupported pipeline type "${detection.type}".`,
       );
@@ -248,7 +253,7 @@ export function normalizePipelineDetections(
     const adapted = {
       id: `AI-${String(index + 1).padStart(3, "0")}`,
       district,
-      type: detection.type,
+      type: pipelineTypeMap.get(detection.type),
       latitude: detection.latitude,
       longitude: detection.longitude,
       confidence: detection.confidence,
@@ -261,4 +266,20 @@ export function normalizePipelineDetections(
   });
 
   return normalized;
+}
+
+export function normalizeLocalApiUrl(value) {
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error("Pipeline API address must be a valid URL.");
+  }
+
+  const localHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
+  if (url.protocol !== "http:" || !localHosts.has(url.hostname)) {
+    throw new Error("Pipeline API must run on the local machine over HTTP.");
+  }
+
+  return url.origin;
 }

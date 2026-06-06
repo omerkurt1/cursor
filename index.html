@@ -124,11 +124,27 @@
 
             <div class="import-panel">
               <p class="eyebrow">AI integration</p>
-              <strong>Load detection results</strong>
+              <strong>Connect local AI pipeline</strong>
               <p>
-                Import Person 1’s minimal JSON output. Personal or unexpected
-                fields are rejected before entering the dashboard.
+                Connect to Mert’s local API or import its minimal JSON output.
+                Remote hosts and unexpected fields are rejected.
               </p>
+              <label class="api-url-label" for="pipeline-api-url">
+                Local API address
+                <input
+                  id="pipeline-api-url"
+                  type="url"
+                  value="http://127.0.0.1:8000"
+                  spellcheck="false"
+                />
+              </label>
+              <button id="connect-pipeline" class="import-button" type="button">
+                Connect live pipeline
+              </button>
+              <div id="pipeline-status" class="import-status" role="status">
+                Live pipeline not connected.
+              </div>
+              <div class="import-divider"><span>or use file</span></div>
               <label class="import-button" for="detection-import">
                 Import detection JSON
               </label>

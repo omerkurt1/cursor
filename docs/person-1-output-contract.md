@@ -34,7 +34,8 @@ For the current AI prototype, the dashboard also accepts an exact minimized
 five-field record containing `type`, `latitude`, `longitude`, `confidence`, and
 `timestamp`. The adapter:
 
-- accepts only `traffic_sign` and `traffic_light` object types;
+- accepts `traffic_sign`, `traffic_light`, `pothole`, and `damaged_sign`;
+- maps `pothole` into the dashboard's `road_damage` workflow;
 - rejects every extra field;
 - assigns a generated ID, `Unassigned` district, `new` status, and priority
   derived from confidence;

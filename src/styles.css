@@ -358,6 +358,59 @@ h2 {
   line-height: 1.55;
 }
 
+.api-url-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.api-url-label input {
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px 11px;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  outline: none;
+  background: #fffdf8;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.api-url-label input:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(0, 127, 115, 0.12);
+}
+
+.import-button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.import-divider {
+  margin: 14px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.import-divider::before,
+.import-divider::after {
+  height: 1px;
+  flex: 1;
+  content: "";
+  background: var(--line);
+}
+
 .import-button {
   padding: 11px 13px;
   display: block;

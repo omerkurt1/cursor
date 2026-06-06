@@ -8,6 +8,7 @@ import {
   filterDetections,
   getRoutePoints,
   normalizeDeletionReport,
+  normalizeLocalApiUrl,
   normalizePipelineDetections,
   updateDetectionStatus,
   validateDetectionImport,
@@ -313,6 +314,63 @@ async function importDeletionReport(file) {
   }
 }
 
+async function fetchJson(url, label) {
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.error || `${label} request failed (${response.status}).`);
+  }
+  return response.json();
+}
+
+async function connectPipeline() {
+  const status = document.querySelector("#pipeline-status");
+  const button = document.querySelector("#connect-pipeline");
+  button.disabled = true;
+  status.textContent = "Connecting to local AI pipeline…";
+  status.dataset.state = "";
+
+  try {
+    const baseUrl = normalizeLocalApiUrl(
+      document.querySelector("#pipeline-api-url").value,
+    );
+    const health = await fetchJson(`${baseUrl}/health`, "Health");
+    if (
+      health.status !== "ok" ||
+      health.service !== "ai-privacy-pipeline"
+    ) {
+      throw new Error("Connected service is not the expected AI privacy pipeline.");
+    }
+
+    detections = normalizePipelineDetections(
+      await fetchJson(`${baseUrl}/api/detections`, "Detections"),
+    );
+    selectedId = detections[0]?.id;
+    populateDistricts();
+    resetFilters();
+    render();
+
+    try {
+      deletionReport = normalizeDeletionReport(
+        await fetchJson(`${baseUrl}/api/deletion-report`, "Deletion report"),
+      );
+      renderDeletionProof();
+    } catch {
+      deletionReport = null;
+      renderDeletionProof();
+    }
+
+    status.textContent =
+      `${detections.length} live detection(s) loaded from the local privacy pipeline.`;
+    status.dataset.state = "success";
+  } catch (error) {
+    status.textContent = error.message;
+    status.dataset.state = "error";
+  } finally {
+    button.disabled = false;
+  }
+}
+
 function bindControls() {
   ["district", "type", "priority", "status"].forEach((key) => {
     document.querySelector(`#${key}-filter`).addEventListener("change", (event) => {
@@ -344,7 +402,14 @@ function bindControls() {
     const deletionStatus = document.querySelector("#deletion-status");
     deletionStatus.textContent = "Waiting for raw-data deletion proof.";
     deletionStatus.dataset.state = "";
+    const pipelineStatus = document.querySelector("#pipeline-status");
+    pipelineStatus.textContent = "Live pipeline not connected.";
+    pipelineStatus.dataset.state = "";
   });
+
+  document
+    .querySelector("#connect-pipeline")
+    .addEventListener("click", connectPipeline);
 
   document.querySelector("#issue-list").addEventListener("click", (event) => {
     const item = event.target.closest("[data-detection-id]");

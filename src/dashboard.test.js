@@ -6,6 +6,7 @@ import {
   buildComplianceSummary,
   createDemoDetections,
   normalizePipelineDetections,
+  normalizeLocalApiUrl,
   normalizeDeletionReport,
   updateDetectionStatus,
   validateDetectionImport,
@@ -252,11 +253,25 @@ describe("normalizePipelineDetections", () => {
     ).toThrow(/unexpected field "plate"/i);
   });
 
+  it("maps pipeline potholes into the dashboard road-damage workflow", () => {
+    expect(
+      normalizePipelineDetections([
+        {
+          type: "pothole",
+          latitude: 41.021,
+          longitude: 28.874,
+          confidence: 0.91,
+          timestamp: "00:01:24",
+        },
+      ])[0].type,
+    ).toBe("road_damage");
+  });
+
   it("rejects object types outside the pipeline contract", () => {
     expect(() =>
       normalizePipelineDetections([
         {
-          type: "road_damage",
+          type: "person",
           latitude: 41.021,
           longitude: 28.874,
           confidence: 0.91,
@@ -264,5 +279,23 @@ describe("normalizePipelineDetections", () => {
         },
       ]),
     ).toThrow(/unsupported pipeline type/i);
+  });
+});
+
+describe("normalizeLocalApiUrl", () => {
+  it("accepts local pipeline API addresses", () => {
+    expect(normalizeLocalApiUrl("http://localhost:8000/")).toBe(
+      "http://localhost:8000",
+    );
+    expect(normalizeLocalApiUrl("http://127.0.0.1:8000")).toBe(
+      "http://127.0.0.1:8000",
+    );
+  });
+
+  it("rejects remote or insecurely specified pipeline hosts", () => {
+    expect(() => normalizeLocalApiUrl("https://example.com")).toThrow(
+      /local machine/i,
+    );
+    expect(() => normalizeLocalApiUrl("not-a-url")).toThrow(/valid URL/i);
   });
 });

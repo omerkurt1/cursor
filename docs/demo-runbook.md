@@ -17,6 +17,8 @@
 4. **Action:** Select a high-priority issue, assign it, then resolve it.
 5. **AI handoff:** Import the privacy-safe detection JSON.
    The dashboard automatically adapts the current five-field AI pipeline output.
+   For the strongest demo, run the pipeline API on `127.0.0.1:8000` and click
+   **Connect live pipeline**.
 6. **Compliance:** Import deletion proof and export the minimized audit summary.
 7. **Close:** UrbanPulse helps municipalities see earlier, respond faster, and
    use existing public resources more effectively.
