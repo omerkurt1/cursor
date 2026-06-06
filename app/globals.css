@@ -2,9 +2,11 @@
 
 /* ?? Design tokens ?????????????????????????????????????????????????? */
 :root {
-  --bg:          #f6f3ec;
+  --bg:          #f5f0e8;
+  --cream:       #f5f0e8;
+  --cream-light: #faf7f1;
   --surface:     #ffffff;
-  --surface-2:   #fbf9f4;
+  --surface-2:   #fefefe;
   --surface-3:   #f1ece1;
   --line:        #e4ddd0;
   --line-soft:   rgba(0, 0, 0, .08);
@@ -52,7 +54,7 @@ button, select, input { font: inherit; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, .88);
+  background: var(--cream);
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(18px);
   position: relative;
@@ -132,7 +134,7 @@ button, select, input { font: inherit; }
 .sidebar {
   width: var(--sidebar-w);
   flex-shrink: 0;
-  background: var(--surface);
+  background: var(--cream);
   border-right: 1px solid var(--line);
   overflow-y: auto;
   overflow-x: hidden;
@@ -500,13 +502,43 @@ button, select, input { font: inherit; }
   70%  { box-shadow: 0 0 0 10px rgba(225, 79, 42, 0); }
   100% { box-shadow: 0 0 0 0 rgba(225, 79, 42, 0); }
 }
-.leaflet-interactive.high-priority-ring {
+
+/* Custom SVG icon markers */
+.custom-issue-icon {
+  background: none !important;
+  border: none !important;
+}
+
+.map-icon-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid rgba(26, 43, 42, .35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .18), 0 1px 3px rgba(0, 0, 0, .1);
+  transition: transform .2s, box-shadow .2s;
+  cursor: pointer;
+}
+
+.map-icon-marker:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .22);
+}
+
+.map-icon-marker.marker-selected {
+  border: 3px solid #1a2b2a;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .25);
+  transform: scale(1.1);
+}
+
+.map-icon-marker.high-priority-ring {
   animation: marker-pulse 1.8s infinite;
 }
 
 /* ?? Issue list panel ??????????????????????????????????????????????? */
 .issue-list-panel {
-  background: var(--surface);
+  background: #ffffff;
   border-top: 1px solid var(--line);
   max-height: 260px;
   overflow-y: auto;
@@ -518,7 +550,7 @@ button, select, input { font: inherit; }
   padding: 10px 16px 8px;
   border-bottom: 1px solid var(--line);
   position: sticky; top: 0; z-index: 10;
-  background: var(--surface);
+  background: #ffffff;
 }
 .issue-panel-header strong { font-size: 12px; }
 
@@ -604,7 +636,7 @@ button, select, input { font: inherit; }
   margin: 0; padding: 22px 28px;
   display: grid; grid-template-columns: 1.1fr 1fr 0.8fr;
   align-items: center; gap: 28px;
-  background: linear-gradient(105deg, #ffffff 0%, #fbf9f4 100%);
+  background: #ffffff;
   border-top: 1px solid var(--line);
   flex-shrink: 0;
 }
@@ -649,7 +681,7 @@ button, select, input { font: inherit; }
 /* ?? Pipeline panel ????????????????????????????????????????????????? */
 .pipeline-panel {
   padding: 26px;
-  background: linear-gradient(135deg, #eef4f2 0%, #ffffff 100%);
+  background: var(--cream);
   border-top: 1px solid var(--line);
   border-right: 1px solid var(--line);
 }
@@ -674,7 +706,7 @@ button, select, input { font: inherit; }
   display: grid; grid-template-columns: 1fr;
   gap: 20px;
   border-top: 1px solid var(--line);
-  background: var(--surface);
+  background: #ffffff;
 }
 .compliance-intro > p:not(.eyebrow) {
   max-width: 420px; margin: 8px 0 0; color: var(--text-dim); font-size: 10px; line-height: 1.6;

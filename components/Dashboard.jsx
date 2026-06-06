@@ -43,6 +43,15 @@ export default function Dashboard() {
       traffic_light: "#a55eea",
     };
 
+    // SVG icon paths for each issue type
+    const issueIcons = {
+      road_damage: `<path d="M2 18h20L12 3 2 18zm11-3h-2v-2h2v2zm0-4h-2V7h2v4z"/>`,
+      damaged_sign: `<path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm-1 14h2v2h-2v-2zm0-8h2v6h-2V8z"/>`,
+      overflowing_container: `<path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>`,
+      traffic_sign: `<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v2h-2v-2zm0-8h2v6h-2V9z"/>`,
+      traffic_light: `<path d="M12 2C8.69 2 6 4.69 6 8v8c0 2.21 1.79 4 4 4h4c2.21 0 4-1.79 4-4V8c0-3.31-2.69-6-6-6zm0 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0-5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0-5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>`,
+    };
+
     const actions = {
       road_damage: "Create a road maintenance inspection task.",
       damaged_sign: "Dispatch a signage team to assess and replace.",
@@ -110,13 +119,13 @@ export default function Dashboard() {
 
     L.control.zoom({ position: "bottomright" }).addTo(map);
 
-    // Free CARTO light tiles — no API key required.
+    // Default OpenStreetMap tiles — standard Leaflet map look.
     L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       {
         maxZoom: 19,
         attribution:
-          "&copy; OpenStreetMap contributors &copy; CARTO",
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       },
     ).addTo(map);
 
@@ -197,15 +206,23 @@ export default function Dashboard() {
       const isSelected = detection.id === selectedId;
       const isHigh = detection.priority === "high";
       const color = colors[detection.type];
+      const svgPath = issueIcons[detection.type] || issueIcons.road_damage;
+      const size = isSelected ? 36 : isHigh ? 30 : 26;
+      const half = size / 2;
 
-      const marker = L.circleMarker([detection.latitude, detection.longitude], {
-        radius: isSelected ? 13 : isHigh ? 10 : 8,
-        color: isSelected ? "#1a2b2a" : "rgba(26,43,42,.55)",
-        weight: isSelected ? 3 : 2,
-        fillColor: color,
-        fillOpacity: 1,
-        className: isHigh ? "high-priority-ring" : "",
+      const svgHtml = `<div class="map-icon-marker ${isHigh ? 'high-priority-ring' : ''} ${isSelected ? 'marker-selected' : ''}" style="width:${size}px;height:${size}px;">
+        <svg viewBox="0 0 24 24" width="${size * 0.55}" height="${size * 0.55}" fill="${color}" xmlns="http://www.w3.org/2000/svg">${svgPath}</svg>
+      </div>`;
+
+      const icon = L.divIcon({
+        className: 'custom-issue-icon',
+        html: svgHtml,
+        iconSize: [size, size],
+        iconAnchor: [half, half],
+        popupAnchor: [0, -half],
       });
+
+      const marker = L.marker([detection.latitude, detection.longitude], { icon });
 
       const priorityClass = `popup-priority-${detection.priority}`;
       marker.bindPopup(`
