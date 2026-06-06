@@ -44,6 +44,34 @@ def test_fail_closed_on_missing_video() -> None:
     print("  [OK] Fail-closed: var olmayan video -> pipeline reddetti.")
 
 
+def test_street_view_no_api_key(tmp_dir: Path) -> None:
+    """Street View: API key olmadan fetch_to_video StreetViewError firlatmali."""
+    import importlib.util
+
+    scripts_dir = PROJECT_ROOT / "scripts"
+    spec = importlib.util.spec_from_file_location(
+        "fetch_street_view", scripts_dir / "fetch_street_view.py"
+    )
+    mod = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
+    spec.loader.exec_module(mod)  # type: ignore[union-attr]
+
+    StreetViewError = mod.StreetViewError
+    _get_api_key = mod._get_api_key
+
+    import os
+    old = os.environ.pop("STREET_VIEW_API_KEY", None)
+    try:
+        try:
+            _get_api_key(None)
+            raise RuntimeError("StreetViewError bekleniyor ama firlatilmadi.")
+        except StreetViewError:
+            pass
+    finally:
+        if old is not None:
+            os.environ["STREET_VIEW_API_KEY"] = old
+    print("  [OK] Street View: API key olmadan -> StreetViewError.")
+
+
 def test_fail_closed_on_empty_output(tmp_dir: Path) -> None:
     """Fail-closed: anonymize_video dogrudan AnonymizationError firlatabilecegini dogrular."""
     import importlib.util, types
@@ -74,10 +102,10 @@ def main() -> None:
     output_dir = PROJECT_ROOT / "output" / "smoke"
     report_dir = PROJECT_ROOT / "reports" / "smoke"
 
-    print("1/5 Demo video olusturuluyor...")
+    print("1/6 Demo video olusturuluyor...")
     run([PYTHON, "scripts/create_demo_video.py", "--output", str(input_video)])
 
-    print("2/5 Pipeline calistiriliyor...")
+    print("2/6 Pipeline calistiriliyor...")
     run(
         [
             PYTHON,
@@ -91,7 +119,7 @@ def main() -> None:
         ]
     )
 
-    print("3/5 Cikti validasyonu...")
+    print("3/6 Cikti validasyonu...")
     run(
         [
             PYTHON,
@@ -101,7 +129,7 @@ def main() -> None:
         ]
     )
 
-    print("4/5 Silme guvenlik siniri testi...")
+    print("4/6 Silme guvenlik siniri testi...")
     run(
         [
             PYTHON,
@@ -113,13 +141,20 @@ def main() -> None:
         expect_success=False,
     )
 
-    print("5/5 Fail-closed testleri...")
+    print("5/6 Fail-closed testleri...")
     test_fail_closed_on_missing_video()
     tmp_dir = Path(tempfile.mkdtemp())
     try:
         test_fail_closed_on_empty_output(tmp_dir)
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    print("6/6 Street View API guard testleri...")
+    tmp_dir2 = Path(tempfile.mkdtemp())
+    try:
+        test_street_view_no_api_key(tmp_dir2)
+    finally:
+        shutil.rmtree(tmp_dir2, ignore_errors=True)
 
     print("Smoke test basarili.")
 
