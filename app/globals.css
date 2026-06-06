@@ -125,7 +125,7 @@ button, select, input { font: inherit; }
 /* ?? Dashboard layout ??????????????????????????????????????????????? */
 .dashboard-layout {
   display: flex;
-  height: calc(100vh - var(--topbar-h));
+  min-height: 500px;
   overflow: hidden;
 }
 
@@ -395,7 +395,7 @@ button, select, input { font: inherit; }
 /* ?? Main area ?????????????????????????????????????????????????????? */
 .main-area {
   flex: 1; display: flex; flex-direction: column;
-  position: relative; min-width: 0; overflow: hidden;
+  position: relative; min-width: 0; overflow: visible;
 }
 
 /* ?? Stats overlay ?????????????????????????????????????????????????? */
@@ -538,10 +538,7 @@ button, select, input { font: inherit; }
 /* ?? Issue list panel ??????????????????????????????????????????????? */
 .issue-list-panel {
   background: var(--cream);
-  border-top: 1px solid var(--line);
-  max-height: 260px;
   overflow-y: auto;
-  flex-shrink: 0;
 }
 
 .issue-panel-header {
@@ -635,26 +632,28 @@ button, select, input { font: inherit; }
   margin: 0; padding: 22px 28px;
   display: grid; grid-template-columns: 1.1fr 1fr 0.8fr;
   align-items: center; gap: 28px;
-  background: #ffffff;
+  background: var(--brand);
+  color: #ffffff;
   border-top: 1px solid var(--line);
   flex-shrink: 0;
 }
 
-.detail-panel .eyebrow { color: var(--teal); }
+.detail-panel .eyebrow { color: rgba(255, 255, 255, .6); }
 .detail-panel h2 { font-family: "Syne", sans-serif; font-size: 22px; margin-top: 4px; color: var(--text); }
-.detail-summary { max-width: 380px; margin: 7px 0 0; color: var(--text-dim); font-size: 10px; line-height: 1.55; }
+.detail-summary { max-width: 380px; margin: 7px 0 0; color: rgba(255, 255, 255, .7); font-size: 10px; line-height: 1.55; }
 
 .detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-.detail-grid div { padding-left: 12px; border-left: 1px solid var(--line); }
-.detail-grid dt { color: var(--text-dim); font-size: 8px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
-.detail-grid dd { margin: 5px 0 0; font-size: 12px; font-weight: 700; text-transform: capitalize; color: var(--text); }
+.detail-grid div { padding-left: 12px; border-left: 1px solid rgba(255, 255, 255, .2); }
+.detail-grid dt { color: rgba(255, 255, 255, .5); font-size: 8px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.detail-grid dd { margin: 5px 0 0; font-size: 12px; font-weight: 700; text-transform: capitalize; color: #ffffff; }
 
 .action-note {
-  padding: 16px; border: 1px solid var(--line); border-radius: 10px;
-  background: rgba(0, 75, 70, .04);
+  padding: 16px; border: 1px solid rgba(255, 255, 255, .15); border-radius: 10px;
+  background: rgba(255, 255, 255, .1);
+  color: #ffffff;
 }
-.action-note > span { color: var(--text-dim); font-size: 8px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
-.action-note strong { display: block; margin-top: 7px; color: var(--brand); font-size: 12px; line-height: 1.4; }
+.action-note > span { color: rgba(255, 255, 255, .5); font-size: 8px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.action-note strong { display: block; margin-top: 7px; color: #2ecc71; font-size: 12px; line-height: 1.4; }
 
 .status-actions { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
 .status-actions button {
@@ -671,33 +670,30 @@ button, select, input { font: inherit; }
   background: rgba(0, 0, 0, .04); cursor: default;
 }
 
-/* ?? Lower grid ????????????????????????????????????????????????????? */
-.lower-grid {
-  display: grid; grid-template-columns: minmax(280px, 340px) 1fr;
-  gap: 0;
-}
+/* ?? Lower grid (deprecated – replaced by .content-grid) ??????????? */
+/* .lower-grid removed */
 
 /* ?? Pipeline panel ????????????????????????????????????????????????? */
 .pipeline-panel {
-  padding: 26px;
-  background: var(--cream);
-  border-top: 1px solid var(--line);
-  border-right: 1px solid var(--line);
+  padding: 32px;
+  background: linear-gradient(135deg, #004b46 0%, #00332f 100%);
+  color: #ffffff;
+  border-radius: 0;
 }
-.pipeline-panel .eyebrow { color: var(--teal); }
+.pipeline-panel .eyebrow { color: rgba(255, 255, 255, .6); }
 .pipeline-panel h2 {
-  font-family: "Syne", sans-serif; font-size: 22px; color: var(--text); margin-top: 8px;
+  font-family: "Syne", sans-serif; font-size: 22px; color: #ffffff; margin-top: 8px;
 }
 .pipeline-panel h2 em { font-style: normal; color: var(--teal); }
 
 .pipeline { margin: 22px 0 0; padding: 0; list-style: none; }
 .pipeline li {
   display: grid; grid-template-columns: 30px 1fr; gap: 12px; padding: 13px 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(255, 255, 255, .15);
 }
-.pipeline li > span { color: var(--teal); font-family: Georgia, serif; font-size: 12px; font-style: italic; }
-.pipeline strong { display: block; font-size: 11px; color: var(--text); }
-.pipeline p { margin: 3px 0 0; color: var(--text-dim); font-size: 9px; line-height: 1.5; }
+.pipeline li > span { color: #c0492b; font-family: Georgia, serif; font-size: 12px; font-style: italic; }
+.pipeline strong { display: block; font-size: 11px; color: #ffffff; }
+.pipeline p { margin: 3px 0 0; color: rgba(255, 255, 255, .6); font-size: 9px; line-height: 1.5; }
 
 /* ?? Compliance console ????????????????????????????????????????????? */
 .compliance-console {
@@ -774,7 +770,7 @@ button, select, input { font: inherit; }
 /* ?? Responsive ????????????????????????????????????????????????????? */
 @media (max-width: 1100px) {
   .evidence-grid { grid-template-columns: repeat(3, 1fr); }
-  .lower-grid { grid-template-columns: 1fr; }
+  .content-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 800px) {
@@ -816,4 +812,121 @@ button, select, input { font: inherit; }
   .topbar-center { display: none; }
   .detail-panel { grid-template-columns: 1fr; padding: 16px; }
   .evidence-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Hero section ──────────────────────────────────────────────────── */
+.hero-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 48px 40px 40px;
+  background: var(--cream);
+}
+.hero-content { max-width: 600px; }
+.hero-heading {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(36px, 5vw, 54px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin: 8px 0 16px;
+}
+.hero-heading em {
+  font-style: italic;
+  color: #c0492b;
+}
+.hero-desc {
+  font-size: 15px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  max-width: 480px;
+}
+.hero-signal-card {
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 28px 36px;
+  min-width: 200px;
+}
+.hero-signal-card strong {
+  display: block;
+  font-size: 48px;
+  font-family: 'Syne', sans-serif;
+  color: var(--brand);
+  line-height: 1;
+  margin: 6px 0 8px;
+}
+.hero-signal-card p:last-child {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+/* ── Stats bar ─────────────────────────────────────────────────────── */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.stat-card {
+  background: var(--cream);
+  padding: 20px 24px;
+}
+.stat-card .eyebrow {
+  margin: 0 0 4px;
+}
+.stat-card strong {
+  display: block;
+  font-size: 32px;
+  font-family: 'Syne', sans-serif;
+  color: var(--text);
+  line-height: 1.1;
+  margin: 2px 0 6px;
+}
+.stat-card span {
+  display: block;
+  font-size: 11px;
+  color: var(--teal);
+}
+.stat-card--primary {
+  background: var(--brand);
+}
+.stat-card--primary .eyebrow {
+  color: rgba(255, 255, 255, .6);
+}
+.stat-card--primary strong {
+  color: #ffffff;
+}
+.stat-card--primary span {
+  color: rgba(255, 255, 255, .7);
+}
+
+/* ── Content grid (issue list + pipeline side by side) ─────────── */
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.content-grid .issue-list-panel {
+  border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  max-height: 420px;
+  overflow-y: auto;
+  background: var(--surface);
+}
+.content-grid .pipeline-panel {
+  border-top: none;
+}
+
+/* ── Compliance section wrapper ────────────────────────────────── */
+.compliance-section {
+  padding: 0;
+}
+.compliance-section .compliance-console {
+  max-width: 100%;
 }

@@ -278,7 +278,7 @@ export default function Dashboard() {
         const el = document.querySelector(`#stat-${k}`);
         if (el) animateNumber(el, stats[k]);
       });
-      const sc = document.querySelector("#signal-count");
+      const sc = document.querySelector("#hero-signal-count");
       if (sc) animateNumber(sc, stats.total);
     }
 
@@ -885,6 +885,51 @@ export default function Dashboard() {
         </div>
       </header>
 
+      {/* ── Hero section ─────────────────────────────────────────── */}
+      <section className="hero-section">
+        <div className="hero-content">
+          <p className="eyebrow">City Operations / Situation Room</p>
+          <h1 className="hero-heading">
+            See the city.
+            <br />
+            <em>Act sooner.</em>
+          </h1>
+          <p className="hero-desc">
+            Existing service vehicles become privacy-safe street sensors,
+            turning daily routes into actionable maintenance intelligence.
+          </p>
+        </div>
+        <div className="hero-signal-card">
+          <p className="eyebrow">Today&apos;s Signal</p>
+          <strong id="hero-signal-count">0</strong>
+          <p>actionable issues mapped across active districts</p>
+        </div>
+      </section>
+
+      {/* ── Stats bar ────────────────────────────────────────────── */}
+      <div className="stats-bar">
+        <div className="stat-card stat-card--primary">
+          <p className="eyebrow">Mapped Issues</p>
+          <strong id="stat-total">0</strong>
+          <span>All detected urban objects</span>
+        </div>
+        <div className="stat-card">
+          <p className="eyebrow">Urgent Attention</p>
+          <strong id="stat-urgent">0</strong>
+          <span>High-priority field actions</span>
+        </div>
+        <div className="stat-card">
+          <p className="eyebrow">Resolved</p>
+          <strong id="stat-resolved">0</strong>
+          <span>Closed by municipal teams</span>
+        </div>
+        <div className="stat-card">
+          <p className="eyebrow">District Coverage</p>
+          <strong id="stat-districts">0</strong>
+          <span>Districts represented today</span>
+        </div>
+      </div>
+
       <div className="dashboard-layout">
         {/* ── Left Sidebar ─────────────────────────────────────────── */}
         <aside className="sidebar" id="sidebar">
@@ -892,7 +937,7 @@ export default function Dashboard() {
             <div className="sidebar-section">
               <p className="eyebrow">Control panel</p>
               <div className="section-row">
-                <h2 className="sidebar-h2">Focus signal</h2>
+                <h2 className="sidebar-h2">Focus the signal</h2>
                 <button id="reset-filters" className="text-button" type="button">
                   Reset
                 </button>
@@ -960,213 +1005,77 @@ export default function Dashboard() {
                   District preset
                   <select id="scan-district-select">
                     <option value="">— select district —</option>
-                    <option value="kadikoy" data-lat="40.9930" data-lng="29.0300">
-                      Kadıköy
-                    </option>
-                    <option value="besiktas" data-lat="41.0430" data-lng="29.0080">
-                      Beşiktaş
-                    </option>
-                    <option value="sisli" data-lat="41.0602" data-lng="28.9877">
-                      Şişli
-                    </option>
-                    <option value="fatih" data-lat="41.0170" data-lng="28.9497">
-                      Fatih
-                    </option>
-                    <option value="uskudar" data-lat="41.0265" data-lng="29.0152">
-                      Üsküdar
-                    </option>
-                    <option value="beyoglu" data-lat="41.0335" data-lng="28.9774">
-                      Beyoğlu
-                    </option>
-                    <option value="bakirkoy" data-lat="40.9781" data-lng="28.8746">
-                      Bakırköy
-                    </option>
-                    <option value="maltepe" data-lat="40.9357" data-lng="29.1551">
-                      Maltepe
-                    </option>
-                    <option value="pendik" data-lat="40.8777" data-lng="29.2350">
-                      Pendik
-                    </option>
-                    <option value="atasehir" data-lat="40.9920" data-lng="29.1244">
-                      Ataşehir
-                    </option>
-                    <option value="sariyer" data-lat="41.1664" data-lng="29.0502">
-                      Sarıyer
-                    </option>
-                    <option
-                      value="eyupsultan"
-                      data-lat="41.0499"
-                      data-lng="28.9283"
-                    >
-                      Eyüpsultan
-                    </option>
-                    <option value="bagcilar" data-lat="41.0368" data-lng="28.8570">
-                      Bağcılar
-                    </option>
-                    <option
-                      value="bahcelievler"
-                      data-lat="41.0008"
-                      data-lng="28.8556"
-                    >
-                      Bahçelievler
-                    </option>
-                    <option
-                      value="zeytinburnu"
-                      data-lat="40.9974"
-                      data-lng="28.9099"
-                    >
-                      Zeytinburnu
-                    </option>
-                    <option
-                      value="gaziosmanpasa"
-                      data-lat="41.0642"
-                      data-lng="28.9124"
-                    >
-                      Gaziosmanpaşa
-                    </option>
-                    <option
-                      value="sultangazi"
-                      data-lat="41.1071"
-                      data-lng="28.8717"
-                    >
-                      Sultangazi
-                    </option>
-                    <option
-                      value="kucukcekmece"
-                      data-lat="41.0013"
-                      data-lng="28.7836"
-                    >
-                      Küçükçekmece
-                    </option>
-                    <option value="avcilar" data-lat="40.9799" data-lng="28.7219">
-                      Avcılar
-                    </option>
-                    <option
-                      value="buyukcekmece"
-                      data-lat="41.0220"
-                      data-lng="28.5805"
-                    >
-                      Büyükçekmece
-                    </option>
-                    <option value="gungoren" data-lat="41.0115" data-lng="28.8730">
-                      Güngören
-                    </option>
-                    <option value="kartal" data-lat="40.9132" data-lng="29.1888">
-                      Kartal
-                    </option>
-                    <option value="umraniye" data-lat="41.0166" data-lng="29.1065">
-                      Ümraniye
-                    </option>
-                    <option value="esenyurt" data-lat="41.0336" data-lng="28.6736">
-                      Esenyurt
-                    </option>
-                    <option value="tuzla" data-lat="40.8167" data-lng="29.2996">
-                      Tuzla
-                    </option>
-                    <option
-                      value="basaksehir"
-                      data-lat="41.0919"
-                      data-lng="28.8136"
-                    >
-                      Başakşehir
-                    </option>
-                    <option
-                      value="arnavutkoy"
-                      data-lat="41.1851"
-                      data-lng="28.7397"
-                    >
-                      Arnavutköy
-                    </option>
-                    <option value="beykoz" data-lat="41.1313" data-lng="29.0956">
-                      Beykoz
-                    </option>
-                    <option
-                      value="sultanbeyli"
-                      data-lat="40.9646"
-                      data-lng="29.2629"
-                    >
-                      Sultanbeyli
-                    </option>
-                    <option value="cekmekoy" data-lat="41.0449" data-lng="29.1843">
-                      Çekmeköy
-                    </option>
-                    <option value="silivri" data-lat="41.0735" data-lng="28.2470">
-                      Silivri
-                    </option>
-                    <option value="city" data-lat="41.0082" data-lng="28.9784">
-                      🌆 Entire Istanbul
-                    </option>
+                    <option value="kadikoy" data-lat="40.9930" data-lng="29.0300">Kadıköy</option>
+                    <option value="besiktas" data-lat="41.0430" data-lng="29.0080">Beşiktaş</option>
+                    <option value="sisli" data-lat="41.0602" data-lng="28.9877">Şişli</option>
+                    <option value="fatih" data-lat="41.0170" data-lng="28.9497">Fatih</option>
+                    <option value="uskudar" data-lat="41.0265" data-lng="29.0152">Üsküdar</option>
+                    <option value="beyoglu" data-lat="41.0335" data-lng="28.9774">Beyoğlu</option>
+                    <option value="bakirkoy" data-lat="40.9781" data-lng="28.8746">Bakırköy</option>
+                    <option value="maltepe" data-lat="40.9357" data-lng="29.1551">Maltepe</option>
+                    <option value="pendik" data-lat="40.8777" data-lng="29.2350">Pendik</option>
+                    <option value="atasehir" data-lat="40.9920" data-lng="29.1244">Ataşehir</option>
+                    <option value="sariyer" data-lat="41.1664" data-lng="29.0502">Sarıyer</option>
+                    <option value="eyupsultan" data-lat="41.0499" data-lng="28.9283">Eyüpsultan</option>
+                    <option value="bagcilar" data-lat="41.0368" data-lng="28.8570">Bağcılar</option>
+                    <option value="bahcelievler" data-lat="41.0008" data-lng="28.8556">Bahçelievler</option>
+                    <option value="zeytinburnu" data-lat="40.9974" data-lng="28.9099">Zeytinburnu</option>
+                    <option value="gaziosmanpasa" data-lat="41.0642" data-lng="28.9124">Gaziosmanpaşa</option>
+                    <option value="sultangazi" data-lat="41.1071" data-lng="28.8717">Sultangazi</option>
+                    <option value="kucukcekmece" data-lat="41.0013" data-lng="28.7836">Küçükçekmece</option>
+                    <option value="avcilar" data-lat="40.9799" data-lng="28.7219">Avcılar</option>
+                    <option value="buyukcekmece" data-lat="41.0220" data-lng="28.5805">Büyükçekmece</option>
+                    <option value="gungoren" data-lat="41.0115" data-lng="28.8730">Güngören</option>
+                    <option value="kartal" data-lat="40.9132" data-lng="29.1888">Kartal</option>
+                    <option value="umraniye" data-lat="41.0166" data-lng="29.1065">Ümraniye</option>
+                    <option value="esenyurt" data-lat="41.0336" data-lng="28.6736">Esenyurt</option>
+                    <option value="tuzla" data-lat="40.8167" data-lng="29.2996">Tuzla</option>
+                    <option value="basaksehir" data-lat="41.0919" data-lng="28.8136">Başakşehir</option>
+                    <option value="arnavutkoy" data-lat="41.1851" data-lng="28.7397">Arnavutköy</option>
+                    <option value="beykoz" data-lat="41.1313" data-lng="29.0956">Beykoz</option>
+                    <option value="sultanbeyli" data-lat="40.9646" data-lng="29.2629">Sultanbeyli</option>
+                    <option value="cekmekoy" data-lat="41.0449" data-lng="29.1843">Çekmeköy</option>
+                    <option value="silivri" data-lat="41.0735" data-lng="28.2470">Silivri</option>
+                    <option value="city" data-lat="41.0082" data-lng="28.9784">🌆 Entire Istanbul</option>
                   </select>
                 </label>
 
                 <div className="scan-inputs">
                   <label className="field-label" htmlFor="scan-lat">
                     Latitude
-                    <input
-                      id="scan-lat"
-                      type="number"
-                      step="0.0001"
-                      defaultValue="41.015"
-                    />
+                    <input id="scan-lat" type="number" step="0.0001" defaultValue="41.015" />
                   </label>
                   <label className="field-label" htmlFor="scan-lng">
                     Longitude
-                    <input
-                      id="scan-lng"
-                      type="number"
-                      step="0.0001"
-                      defaultValue="28.875"
-                    />
+                    <input id="scan-lng" type="number" step="0.0001" defaultValue="28.875" />
                   </label>
                 </div>
-                <span id="scan-mode-label" className="scan-mode-label">
-                  Single point
-                </span>
+                <span id="scan-mode-label" className="scan-mode-label">Single point</span>
 
-                <button id="trigger-scan" className="btn-scan" type="button">
-                  Trigger Scan
-                </button>
+                <button id="trigger-scan" className="btn-scan" type="button">Trigger Scan</button>
 
                 <div id="scan-progress" className="scan-progress-bar" hidden>
                   <div className="scan-progress-track">
                     <div className="scan-progress-fill" id="scan-progress-fill"></div>
                   </div>
-                  <span id="scan-progress-text" className="scan-progress-text">
-                    Scanning…
-                  </span>
+                  <span id="scan-progress-text" className="scan-progress-text">Scanning…</span>
                 </div>
-
                 <div id="scan-last-time" className="scan-last-time" hidden>
                   Last scan: <span id="scan-last-time-val">—</span>
                 </div>
-
-                <div id="scan-status" className="status-msg" role="status">
-                  No scan in progress.
-                </div>
-                <p className="source-note">
-                  <strong>Primary source:</strong> Municipal vehicle cameras
-                </p>
+                <div id="scan-status" className="status-msg" role="status">No scan in progress.</div>
+                <p className="source-note"><strong>Primary source:</strong> Municipal vehicle cameras</p>
               </div>
 
               {/* Hidden elements needed by JS */}
-              <input
-                id="pipeline-api-url"
-                type="hidden"
-                defaultValue="http://127.0.0.1:8000"
-              />
-              <input
-                id="detection-import"
-                type="file"
-                accept="application/json,.json"
-              />
+              <input id="pipeline-api-url" type="hidden" defaultValue="http://127.0.0.1:8000" />
+              <input id="detection-import" type="file" accept="application/json,.json" />
               <div id="pipeline-status" className="status-msg" role="status" style={{ display: 'none' }}></div>
               <div id="import-status" className="status-msg" role="status" style={{ display: 'none' }}></div>
             </div>
 
             <div className="privacy-card">
-              <div className="privacy-icon" aria-hidden="true">
-                P
-              </div>
+              <div className="privacy-icon" aria-hidden="true">P</div>
               <div>
                 <strong>Privacy by design</strong>
                 <p>
@@ -1181,34 +1090,6 @@ export default function Dashboard() {
 
         {/* ── Main map area ───────────────────────────────────────── */}
         <div className="main-area">
-          {/* Floating stats overlay */}
-          <div className="stats-overlay">
-            <div className="stat-chip stat-chip--primary">
-              <span>Total</span>
-              <strong id="stat-total">0</strong>
-            </div>
-            <div className="stat-chip stat-chip--danger">
-              <span>Urgent</span>
-              <strong id="stat-urgent">0</strong>
-            </div>
-            <div className="stat-chip stat-chip--success">
-              <span>Resolved</span>
-              <strong id="stat-resolved">0</strong>
-            </div>
-            <div className="stat-chip">
-              <span>Districts</span>
-              <strong id="stat-districts">0</strong>
-            </div>
-            <div className="stat-chip stat-chip--signal">
-              <span
-                className="live-dot"
-                style={{ width: "6px", height: "6px" }}
-              ></span>
-              <strong id="signal-count">0</strong>
-              <span style={{ fontSize: "9px", opacity: 0.7 }}> signals</span>
-            </div>
-          </div>
-
           {/* Map toolbar */}
           <div className="map-toolbar">
             <div className="toolbar-left">
@@ -1216,103 +1097,34 @@ export default function Dashboard() {
               <strong id="visible-count">0 signals visible</strong>
             </div>
             <div className="map-legend" aria-label="Map legend">
-              <span>
-                <i className="route-key"></i> Route
-              </span>
-              <span>
-                <i className="dot road"></i> Road
-              </span>
-              <span>
-                <i className="dot sign"></i> Sign
-              </span>
-              <span>
-                <i className="dot waste"></i> Waste
-              </span>
-              <span>
-                <i className="dot traffic"></i> Traffic
-              </span>
+              <span><i className="dot road"></i> Road</span>
+              <span><i className="dot sign"></i> Sign</span>
+              <span><i className="dot waste"></i> Waste</span>
+              <span><i className="dot traffic"></i> Traffic</span>
             </div>
           </div>
-
-          <p className="map-legend-note">
-            Markers show urban objects (road damage, signs, bins) — never people
-            or vehicles.
-          </p>
 
           <div id="map" aria-label="City issue map"></div>
-
-          {/* Issue list panel overlaid at bottom of map */}
-          <div className="issue-list-panel">
-            <div className="issue-panel-header">
-              <div>
-                <p className="eyebrow" style={{ margin: "0 0 2px" }}>
-                  Field queue
-                </p>
-                <strong>Latest detections</strong>
-              </div>
-              <div className="sort-controls">
-                <button className="sort-btn active" id="sort-time" type="button">
-                  Time
-                </button>
-                <button className="sort-btn" id="sort-priority" type="button">
-                  Priority
-                </button>
-              </div>
-              <span id="queue-count" className="count-pill">
-                0 issues
-              </span>
-            </div>
-            <div id="issue-list" className="issue-list"></div>
-          </div>
         </div>
       </div>
 
-      {/* ── Detail panel ──────────────────────────────────────────── */}
-      <section id="issue-detail" className="detail-panel" aria-live="polite">
-        <div>
-          <p className="eyebrow">Selected field signal</p>
-          <h2 id="detail-title">Select an issue</h2>
-          <p id="detail-summary" className="detail-summary">
-            Choose a marker or queue item to inspect its municipal action.
-          </p>
+      {/* ── Content grid: issue list + pipeline ─────────────────── */}
+      <div className="content-grid">
+        <div className="issue-list-panel">
+          <div className="issue-panel-header">
+            <div>
+              <p className="eyebrow" style={{ margin: "0 0 2px" }}>Field queue</p>
+              <strong>Latest detections</strong>
+            </div>
+            <div className="sort-controls">
+              <button className="sort-btn active" id="sort-time" type="button">Time</button>
+              <button className="sort-btn" id="sort-priority" type="button">Priority</button>
+            </div>
+            <span id="queue-count" className="count-pill">0 issues</span>
+          </div>
+          <div id="issue-list" className="issue-list"></div>
         </div>
-        <dl className="detail-grid">
-          <div>
-            <dt>District</dt>
-            <dd id="detail-district">—</dd>
-          </div>
-          <div>
-            <dt>Confidence</dt>
-            <dd id="detail-confidence">—</dd>
-          </div>
-          <div>
-            <dt>Detected</dt>
-            <dd id="detail-time">—</dd>
-          </div>
-          <div>
-            <dt>Status</dt>
-            <dd id="detail-status">—</dd>
-          </div>
-        </dl>
-        <div className="action-note">
-          <span>Recommended action</span>
-          <strong id="detail-action">Awaiting signal selection</strong>
-          <div id="status-actions" className="status-actions">
-            <button type="button" data-next-status="new">
-              Reopen
-            </button>
-            <button type="button" data-next-status="assigned">
-              Assign team
-            </button>
-            <button type="button" data-next-status="resolved">
-              Mark resolved
-            </button>
-          </div>
-        </div>
-      </section>
 
-      {/* ── Privacy pipeline info ─────────────────────────────────── */}
-      <section className="lower-grid">
         <div className="pipeline-panel">
           <p className="eyebrow">Privacy-by-design</p>
           <h2>
@@ -1351,25 +1163,49 @@ export default function Dashboard() {
             </li>
           </ol>
         </div>
+      </div>
 
-        {/* ── Compliance console ──────────────────────────────────── */}
+      {/* ── Detail panel ──────────────────────────────────────────── */}
+      <section id="issue-detail" className="detail-panel" aria-live="polite">
+        <div>
+          <p className="eyebrow">Selected field signal</p>
+          <h2 id="detail-title">Select an issue</h2>
+          <p id="detail-summary" className="detail-summary">
+            Choose a marker or queue item to inspect its municipal action.
+          </p>
+        </div>
+        <dl className="detail-grid">
+          <div><dt>District</dt><dd id="detail-district">—</dd></div>
+          <div><dt>Confidence</dt><dd id="detail-confidence">—</dd></div>
+          <div><dt>Detected</dt><dd id="detail-time">—</dd></div>
+          <div><dt>Status</dt><dd id="detail-status">—</dd></div>
+        </dl>
+        <div className="action-note">
+          <span>Recommended action</span>
+          <strong id="detail-action">Awaiting signal selection</strong>
+          <div id="status-actions" className="status-actions">
+            <button type="button" data-next-status="new">Reopen</button>
+            <button type="button" data-next-status="assigned">Assign team</button>
+            <button type="button" data-next-status="resolved">Mark resolved</button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Compliance console ─────────────────────────────────────── */}
+      <section className="compliance-section">
         <div className="compliance-console">
           <div className="compliance-intro">
             <p className="eyebrow">Compliance console</p>
             <h2>Prove the safeguards.</h2>
             <p>
               Policy claims and deletion evidence are kept separate. Upload the
-              AI pipeline's deletion report to complete the audit record.
+              AI pipeline&apos;s deletion report to complete the audit record.
             </p>
             <div className="compliance-actions">
               <label className="audit-button primary" htmlFor="deletion-report-import">
                 Verify deletion report
               </label>
-              <input
-                id="deletion-report-import"
-                type="file"
-                accept="application/json,.json"
-              />
+              <input id="deletion-report-import" type="file" accept="application/json,.json" />
               <button id="export-compliance" className="audit-button" type="button">
                 Export audit summary
               </button>
@@ -1400,9 +1236,7 @@ export default function Dashboard() {
               <span>03</span>
               <div>
                 <strong>Raw data deleted</strong>
-                <p id="deletion-check-copy">
-                  Deletion evidence has not been imported.
-                </p>
+                <p id="deletion-check-copy">Deletion evidence has not been imported.</p>
               </div>
               <b id="deletion-check-label">Pending</b>
             </article>
@@ -1412,35 +1246,16 @@ export default function Dashboard() {
             <div className="section-row">
               <div>
                 <p className="eyebrow">Live pipeline evidence</p>
-                <h2 id="evidence-mode" style={{ fontSize: "18px", margin: 0 }}>
-                  Not connected
-                </h2>
+                <h2 id="evidence-mode" style={{ fontSize: "18px", margin: 0 }}>Not connected</h2>
               </div>
-              <span id="evidence-guardrail" className="count-pill">
-                Awaiting proof
-              </span>
+              <span id="evidence-guardrail" className="count-pill">Awaiting proof</span>
             </div>
             <div className="evidence-grid">
-              <article>
-                <span>Image source</span>
-                <strong id="evidence-source">—</strong>
-              </article>
-              <article>
-                <span>Processed frames</span>
-                <strong id="evidence-frames">—</strong>
-              </article>
-              <article>
-                <span>Faces blurred</span>
-                <strong id="evidence-faces">—</strong>
-              </article>
-              <article>
-                <span>Plates blurred</span>
-                <strong id="evidence-plates">—</strong>
-              </article>
-              <article>
-                <span>Detections after dedupe</span>
-                <strong id="evidence-detections">—</strong>
-              </article>
+              <article><span>Image source</span><strong id="evidence-source">—</strong></article>
+              <article><span>Processed frames</span><strong id="evidence-frames">—</strong></article>
+              <article><span>Faces blurred</span><strong id="evidence-faces">—</strong></article>
+              <article><span>Plates blurred</span><strong id="evidence-plates">—</strong></article>
+              <article><span>Detections after dedupe</span><strong id="evidence-detections">—</strong></article>
             </div>
           </div>
         </div>
