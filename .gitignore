@@ -3,6 +3,7 @@ node_modules/
 out/
 dist/
 .vite/
+.vercel
 
 # local env files (never commit secrets / API keys)
 .env*.local
