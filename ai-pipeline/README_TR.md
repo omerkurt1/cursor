@@ -105,7 +105,22 @@ Model ham goruntu uzerinde degil, once anonimlestirilmis frame/video uzerinde ca
 
 ## Person 2 Entegrasyonu
 
-Backend ve harita arayuzu icin sozlesme:
+Pipeline ciktilarini HTTP API uzerinden sunmak icin:
+
+```powershell
+python scripts\serve.py --port 8000
+```
+
+Endpointler:
+
+```text
+GET /health
+GET /api/detections        <- Go backend bu adresten okur
+GET /api/pipeline-report
+GET /api/deletion-report
+```
+
+Tam sozlesme ve ornek Go kodu icin:
 
 ```text
 docs/INTEGRATION_TR.md
