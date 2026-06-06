@@ -1,12 +1,15 @@
 # AI ve Mahremiyet Pipeline
 
-Bu klasor, Google Street View goruntusunu once anonimlestiren, sonra yalnizca anonimlestirilmis video uzerinden kentsel obje tespiti yapan guvenli veri hattidir.
+Bu klasor, belediye hizmet araclarinin kamera goruntusunu once anonimlestiren,
+sonra yalnizca anonimlestirilmis video uzerinden kentsel obje tespiti yapan
+guvenli veri hattidir. Google Street View ve sentetik video yalnizca gelistirme
+ve demo yedegidir; projenin uretim veri kaynagi degildir.
 
 ## Pipeline
 
 ```text
-Google Street View API  (fetch_street_view.py)
-  -> Street View video   [data/input/ — gitignore ile korunur]
+municipal vehicle camera / local demo video
+  -> local raw video     [data/input/ — gitignore ile korunur]
   -> face + license plate blur  (anonymize_video.py — fail-closed)
   -> anonymized video    [output/anonymized_demo.mp4]
   -> urban object detection  (detect_objects.py — YOLOv8 veya demo)
@@ -48,7 +51,11 @@ Bu ortamda `python` komutunda `pip` yoksa, kullandiginiz Python executable yolun
 & '<python.exe yolu>' scripts\run_pipeline.py --input data\input\demo.mp4 --lat 41.021 --lng 28.874 --demo-fallback
 ```
 
-## Google Street View ile Tam Pipeline
+## Google Street View Gelistirme Yedegi
+
+Bu akis yalnizca hizmet araci videosu mevcut degilken entegrasyonu gelistirmek
+ve gostermek icindir. Sunumda kaynak acikca `Street View fallback` olarak
+belirtilmelidir.
 
 API anahtarini ayarla:
 
