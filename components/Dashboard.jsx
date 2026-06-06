@@ -243,16 +243,6 @@ export default function Dashboard() {
       markerLayer.clearLayers();
       routeLayer.clearLayers();
 
-      const routePoints = getRoutePoints(items);
-      if (routePoints.length > 1) {
-        L.polyline(routePoints, {
-          color: "#007f73",
-          weight: 2,
-          opacity: 0.6,
-          dashArray: "6 8",
-        }).addTo(routeLayer);
-      }
-
       items.forEach((d) => makeMarker(d).addTo(markerLayer));
 
       if (items.length) {
