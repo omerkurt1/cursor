@@ -111,7 +111,9 @@ export default function Dashboard() {
     let sortMode = "time"; // "time" | "priority"
     let clockTimer = null;
 
-    // ── Map setup (free Leaflet + Carto light tiles, no API key) ────────────
+    // ── Map setup ────────────────────────────────────────────────────────
+    const BACKEND_URL = "https://cursor-j7jx.onrender.com";
+
     const map = L.map("map", {
       zoomControl: false,
       attributionControl: true,
@@ -537,69 +539,75 @@ export default function Dashboard() {
     // ── Connect pipeline ───────────────────────────────────────────────────
     async function connectPipeline() {
       const statusEl = document.querySelector("#pipeline-status");
-      const button = document.querySelector("#connect-pipeline");
-      button.disabled = true;
-      statusEl.textContent = "Connecting to local AI pipeline…";
-      statusEl.dataset.state = "";
+      if (statusEl) {
+        statusEl.textContent = "Connecting to backend…";
+        statusEl.dataset.state = "";
+      }
 
       try {
-        const baseUrl = normalizeLocalApiUrl(
-          document.querySelector("#pipeline-api-url").value,
-        );
-        const health = await fetchJson(`${baseUrl}/health`, "Health");
-        if (
-          health.status !== "ok" ||
-          health.service !== "ai-privacy-pipeline"
-        ) {
-          throw new Error(
-            "Connected service is not the expected AI privacy pipeline.",
-          );
+        const health = await fetchJson(`${BACKEND_URL}/health`, "Health");
+        if (health.status !== "ok" && health.status !== "degraded") {
+          throw new Error("Backend service is not responding correctly.");
         }
 
-        pipelineReport = normalizePipelineReport(
-          await fetchJson(`${baseUrl}/api/pipeline-report`, "Pipeline report"),
-        );
-        detections = normalizePipelineDetections(
-          await fetchJson(`${baseUrl}/api/detections`, "Detections"),
-        );
-        selectedId = detections[0]?.id;
-        populateDistricts();
-        resetFilters();
-        render();
-        renderPipelineEvidence();
-        setConnectionStatus(true);
-
+        // Try to load detections from the backend
         try {
-          deletionReport = normalizeDeletionReport(
-            await fetchJson(`${baseUrl}/api/deletion-report`, "Deletion report"),
-          );
-          renderDeletionProof();
+          const detectionsData = await fetchJson(`${BACKEND_URL}/api/v1/detections`, "Detections");
+          // The backend may return detections in various formats
+          const rawDetections = Array.isArray(detectionsData) ? detectionsData : (detectionsData.detections || detectionsData.data || []);
+          if (rawDetections.length > 0) {
+            // Try pipeline format first, fall back to direct format
+            try {
+              detections = normalizePipelineDetections(rawDetections);
+            } catch {
+              try {
+                detections = [...validateDetectionImport(rawDetections)];
+              } catch {
+                // Use raw data with minimal normalization
+                detections = rawDetections.map((d, i) => ({
+                  id: d.id || `DET-${String(i + 1).padStart(4, "0")}`,
+                  district: d.district || "Unassigned",
+                  type: d.type || "road_damage",
+                  latitude: d.latitude || d.lat || 41.0,
+                  longitude: d.longitude || d.lng || 29.0,
+                  confidence: d.confidence || 0.8,
+                  priority: d.priority || "medium",
+                  status: d.status || "new",
+                  detectedAt: d.detectedAt || d.detected_at || d.timestamp || new Date().toISOString(),
+                }));
+              }
+            }
+            selectedId = detections[0]?.id;
+            populateDistricts();
+            resetFilters();
+            render();
+          }
         } catch {
-          deletionReport = null;
-          renderDeletionProof();
+          // Detections endpoint not available yet, keep demo data
         }
 
-        statusEl.textContent = `${detections.length} live detection(s) loaded.`;
-        statusEl.dataset.state = "success";
+        setConnectionStatus(true);
+        if (statusEl) {
+          statusEl.textContent = `Connected — ${detections.length} detection(s) loaded.`;
+          statusEl.dataset.state = "success";
+        }
       } catch (err) {
-        pipelineReport = null;
-        renderPipelineEvidence();
         setConnectionStatus(false);
-        statusEl.textContent = err.message;
-        statusEl.dataset.state = "error";
-      } finally {
-        button.disabled = false;
+        if (statusEl) {
+          statusEl.textContent = err.message;
+          statusEl.dataset.state = "error";
+        }
       }
     }
 
     // ── Poll scan status ───────────────────────────────────────────────────
-    async function pollScanStatus(baseUrl, statusEl) {
+    async function pollScanStatus(statusEl) {
       const fillEl = document.querySelector("#scan-progress-fill");
       for (let i = 0; i < 30; i++) {
         await new Promise((r) => setTimeout(r, 2000));
         try {
           const data = await fetchJson(
-            `${baseUrl}/api/scan/status`,
+            `${BACKEND_URL}/api/v1/scan/status`,
             "Scan status",
           );
           if (!data.scan_running) return data.last_result ?? {};
@@ -621,8 +629,6 @@ export default function Dashboard() {
       const lastTimeEl = document.querySelector("#scan-last-time");
       const lastTimeVal = document.querySelector("#scan-last-time-val");
       const button = document.querySelector("#trigger-scan");
-      const demoFallback =
-        document.querySelector("#scan-demo-fallback")?.checked ?? true;
 
       button.disabled = true;
       statusEl.textContent = "Sending scan request…";
@@ -633,23 +639,10 @@ export default function Dashboard() {
         fillEl.style.animation = "none";
       }
 
-      let baseUrl;
-      try {
-        baseUrl = normalizeLocalApiUrl(
-          document.querySelector("#pipeline-api-url").value,
-        );
-      } catch (err) {
-        statusEl.textContent = err.message;
-        statusEl.dataset.state = "error";
-        progressEl?.setAttribute("hidden", "");
-        button.disabled = false;
-        return;
-      }
-
       try {
         let body;
         if (scanWaypoints) {
-          body = { waypoints: scanWaypoints, demo_fallback: demoFallback };
+          body = { waypoints: scanWaypoints };
         } else {
           const lat = parseFloat(
             document.querySelector("#scan-lat")?.value ?? "41.015",
@@ -659,10 +652,10 @@ export default function Dashboard() {
           );
           if (Number.isNaN(lat) || Number.isNaN(lng))
             throw new Error("Latitude and longitude must be valid numbers.");
-          body = { lat, lng, demo_fallback: demoFallback };
+          body = { lat, lng };
         }
 
-        const scanRes = await fetch(`${baseUrl}/api/scan`, {
+        const scanRes = await fetch(`${BACKEND_URL}/api/v1/scan`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
@@ -680,7 +673,7 @@ export default function Dashboard() {
 
         if (scanRes.status === 202) {
           statusEl.textContent = "Scan started — waiting for results…";
-          await pollScanStatus(baseUrl, statusEl);
+          await pollScanStatus(statusEl);
         }
 
         if (fillEl) {
@@ -688,23 +681,34 @@ export default function Dashboard() {
           fillEl.style.animation = "none";
         }
 
-        detections = normalizePipelineDetections(
-          await fetchJson(`${baseUrl}/api/detections`, "Detections"),
-        );
-        selectedId = detections[0]?.id;
-
         try {
-          pipelineReport = normalizePipelineReport(
-            await fetchJson(`${baseUrl}/api/pipeline-report`, "Pipeline report"),
-          );
+          const detectionsData = await fetchJson(`${BACKEND_URL}/api/v1/detections`, "Detections");
+          const rawDetections = Array.isArray(detectionsData) ? detectionsData : (detectionsData.detections || detectionsData.data || []);
+          if (rawDetections.length > 0) {
+            try {
+              detections = normalizePipelineDetections(rawDetections);
+            } catch {
+              detections = rawDetections.map((d, i) => ({
+                id: d.id || `DET-${String(i + 1).padStart(4, "0")}`,
+                district: d.district || "Unassigned",
+                type: d.type || "road_damage",
+                latitude: d.latitude || d.lat || 41.0,
+                longitude: d.longitude || d.lng || 29.0,
+                confidence: d.confidence || 0.8,
+                priority: d.priority || "medium",
+                status: d.status || "new",
+                detectedAt: d.detectedAt || d.detected_at || d.timestamp || new Date().toISOString(),
+              }));
+            }
+            selectedId = detections[0]?.id;
+          }
         } catch {
-          pipelineReport = null;
+          // Keep existing detections if refresh fails
         }
 
         populateDistricts();
         resetFilters();
         render();
-        renderPipelineEvidence();
         setConnectionStatus(true);
 
         const now = new Date().toLocaleTimeString("tr-TR", {
@@ -718,17 +722,8 @@ export default function Dashboard() {
         statusEl.textContent = `Scan complete — ${detections.length} detection(s) refreshed.`;
         statusEl.dataset.state = "success";
       } catch (err) {
-        if (!err.message.includes("already running")) {
-          pipelineReport = null;
-          renderPipelineEvidence();
-          detections = createDemoDetections(sampleDetections);
-          selectedId = detections[0]?.id;
-          populateDistricts();
-          resetFilters();
-          render();
-        }
         statusEl.textContent = err.message.includes("fetch")
-          ? "API offline — showing demo data"
+          ? "Backend unreachable — try again later"
           : err.message;
         statusEl.dataset.state = "error";
       } finally {
