@@ -4,6 +4,7 @@ import {
   filterDetections,
   getRoutePoints,
   buildComplianceSummary,
+  createDemoDetections,
   normalizeDeletionReport,
   updateDetectionStatus,
   validateDetectionImport,
@@ -187,5 +188,20 @@ describe("buildComplianceSummary", () => {
         deletedFileCount: 4,
       },
     });
+  });
+});
+
+describe("createDemoDetections", () => {
+  it("creates a fresh copy so demo actions never mutate sample data", () => {
+    const demo = createDemoDetections(detections);
+
+    demo[0].status = "resolved";
+
+    expect(demo).toEqual([
+      { ...detections[0], status: "resolved" },
+      detections[1],
+      detections[2],
+    ]);
+    expect(detections[0].status).toBe("new");
   });
 });

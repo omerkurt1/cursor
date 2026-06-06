@@ -4,6 +4,7 @@ import "./styles.css";
 import {
   buildComplianceSummary,
   calculateStats,
+  createDemoDetections,
   filterDetections,
   getRoutePoints,
   normalizeDeletionReport,
@@ -37,7 +38,7 @@ const filters = {
   status: "all",
 };
 
-let detections = [...sampleDetections];
+let detections = createDemoDetections(sampleDetections);
 let selectedId = detections[0]?.id;
 let deletionReport = null;
 
@@ -311,6 +312,20 @@ function bindControls() {
     const [file] = event.target.files;
     if (file) importDetections(file);
     event.target.value = "";
+  });
+
+  document.querySelector("#restore-demo").addEventListener("click", () => {
+    detections = createDemoDetections(sampleDetections);
+    selectedId = detections[0]?.id;
+    deletionReport = null;
+    populateDistricts();
+    resetFilters();
+    render();
+    renderDeletionProof();
+    showImportStatus("Built-in demonstration dataset restored.", "success");
+    const deletionStatus = document.querySelector("#deletion-status");
+    deletionStatus.textContent = "Waiting for raw-data deletion proof.";
+    deletionStatus.dataset.state = "";
   });
 
   document.querySelector("#issue-list").addEventListener("click", (event) => {

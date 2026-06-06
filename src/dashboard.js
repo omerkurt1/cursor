@@ -78,6 +78,10 @@ export function buildComplianceSummary(detections, deletionReport) {
   };
 }
 
+export function createDemoDetections(sampleDetections) {
+  return sampleDetections.map((detection) => ({ ...detection }));
+}
+
 const allowedFields = new Set([
   "id",
   "district",
