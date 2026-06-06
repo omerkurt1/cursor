@@ -66,6 +66,13 @@ YOLO kurulumu hackathon aninda zaman alirsa, sadece entegrasyon ve JSON formati 
 python scripts\run_pipeline.py --input data\input\demo.mp4 --lat 41.021 --lng 28.874 --demo-fallback
 ```
 
+Elinizde video yoksa once PII icermeyen sentetik demo videosu uretin:
+
+```powershell
+python scripts\create_demo_video.py --output data\input\demo_synthetic.mp4
+python scripts\run_pipeline.py --input data\input\demo_synthetic.mp4 --lat 41.021 --lng 28.874 --demo-fallback
+```
+
 Uretilecek dosyalar:
 
 ```text
@@ -119,3 +126,17 @@ python scripts\run_pipeline.py --input data\input\demo.mp4 --lat 41.021 --lng 28
 ```
 
 Silme scripti yalnizca `ai-pipeline/data` altindaki klasorleri silebilir.
+
+## Smoke Test
+
+Tum demo hattini, JSON validasyonunu ve silme guvenlik sinirini test etmek icin:
+
+```powershell
+python scripts\smoke_test.py
+```
+
+Basarili cikti:
+
+```text
+Smoke test basarili.
+```

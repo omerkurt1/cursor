@@ -28,6 +28,13 @@ def validate_raw_dir(raw_dir: Path) -> Path:
     return resolved_raw_dir
 
 
+def path_for_report(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix()
+    except ValueError:
+        return str(path.resolve())
+
+
 def delete_raw_data(raw_dir: Path, report_path: Path, confirm: bool) -> dict:
     if not confirm:
         raise RuntimeError("Silme islemi icin --yes parametresi gerekli.")
@@ -38,7 +45,7 @@ def delete_raw_data(raw_dir: Path, report_path: Path, confirm: bool) -> dict:
     if raw_dir.exists():
         for path in sorted(raw_dir.rglob("*"), reverse=True):
             if path.is_file():
-                deleted_files.append(str(path))
+                deleted_files.append(path_for_report(path))
                 path.unlink()
             elif path.is_dir():
                 path.rmdir()
@@ -47,7 +54,7 @@ def delete_raw_data(raw_dir: Path, report_path: Path, confirm: bool) -> dict:
     status = "raw_data_deleted" if deleted_files else "raw_dir_not_found_or_empty"
     report = {
         "deleted_at": datetime.now(timezone.utc).isoformat(),
-        "raw_dir": str(raw_dir),
+        "raw_dir": path_for_report(raw_dir),
         "deleted_file_count": len(deleted_files),
         "deleted_files": deleted_files,
         "status": status,
