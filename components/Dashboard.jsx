@@ -16,6 +16,7 @@ import {
   updateDetectionStatus,
   validateDetectionImport,
 } from "../src/dashboard.js";
+import { buildStreetViewUrl, hasStreetViewKey } from "../src/streetview.js";
 import { detections as sampleDetections } from "../src/data.js";
 
 export default function Dashboard() {
@@ -318,9 +319,53 @@ export default function Dashboard() {
         .join("");
     }
 
+    // ── Street View preview (DEV FALLBACK ONLY) ───────────────────────────
+    // Primary image source is municipal vehicle cameras. Street View is only a
+    // development fallback and is always labeled as such. Google blurs faces and
+    // license plates at the provider, so the imagery is already anonymized.
+    function renderStreetView(selected) {
+      const img = document.querySelector("#detail-sv-img");
+      const placeholder = document.querySelector("#detail-sv-placeholder");
+      if (!img || !placeholder) return;
+
+      function showPlaceholder(message) {
+        img.onerror = null;
+        img.removeAttribute("src");
+        img.style.display = "none";
+        placeholder.style.display = "flex";
+        placeholder.textContent = message;
+      }
+
+      if (!selected) {
+        showPlaceholder("Select a signal to preview its location (dev fallback).");
+        return;
+      }
+      if (!hasStreetViewKey()) {
+        showPlaceholder("Street View key not configured (dev fallback).");
+        return;
+      }
+
+      const url = buildStreetViewUrl({
+        lat: selected.latitude,
+        lng: selected.longitude,
+      });
+      if (!url) {
+        showPlaceholder("No Street View preview available (dev fallback).");
+        return;
+      }
+
+      placeholder.style.display = "none";
+      img.style.display = "block";
+      img.alt = `Street View dev-fallback preview near ${selected.district}`;
+      img.onerror = () =>
+        showPlaceholder("No Street View preview available (dev fallback).");
+      img.src = url;
+    }
+
     // ── Issue detail ──────────────────────────────────────────────────────
     function renderIssueDetail(items) {
       const selected = items.find(({ id }) => id === selectedId);
+      renderStreetView(selected);
       if (!selected) {
         document.querySelector("#detail-title").textContent =
           "No signal selected";
@@ -1350,6 +1395,26 @@ export default function Dashboard() {
               Mark resolved
             </button>
           </div>
+        </div>
+
+        {/* Street View preview — DEV FALLBACK ONLY */}
+        <div className="detail-streetview" id="detail-streetview">
+          <div className="sv-head">
+            <span className="sv-eyebrow">Location preview</span>
+            <span className="sv-badge">Dev fallback — Street View</span>
+          </div>
+          <div className="sv-frame" id="detail-sv-frame">
+            <img id="detail-sv-img" alt="Street View dev-fallback preview" />
+            <div className="sv-placeholder" id="detail-sv-placeholder">
+              Select a signal to preview its location (dev fallback).
+            </div>
+          </div>
+          <p className="sv-kvkk">
+            Imagery anonymized by provider — faces &amp; plates blurred.
+          </p>
+          <p className="sv-primary">
+            Primary source: Municipal vehicle cameras.
+          </p>
         </div>
       </section>
 
