@@ -887,7 +887,7 @@ export default function Dashboard() {
 
       {/* ── Stats bar ────────────────────────────────────────────── */}
       <div className="stats-bar">
-        <div className="stat-card stat-card--primary">
+        <div className="stat-card">
           <p className="eyebrow">Mapped Issues</p>
           <strong id="stat-total">0</strong>
           <span>All detected urban objects</span>

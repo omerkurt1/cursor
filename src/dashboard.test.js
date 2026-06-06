@@ -24,6 +24,20 @@ describe("Dashboard JSX integration", () => {
 
     expect(dashboardSource).not.toMatch(/#evidence-/);
   });
+
+  it("gives every stats card the same default and hover behavior", () => {
+    const dashboardSource = readFileSync(
+      new URL("../components/Dashboard.jsx", import.meta.url),
+      "utf8",
+    );
+    const stylesheetSource = readFileSync(
+      new URL("../app/globals.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(dashboardSource).not.toContain("stat-card--primary");
+    expect(stylesheetSource).not.toContain(".stat-card--primary");
+  });
 });
 
 const detections = [

@@ -900,21 +900,17 @@ button, select, input { font: inherit; }
   transition: color .3s ease;
 }
 
-/* Hover — turns dark teal like the primary card */
-.stat-card:hover,
-.stat-card--primary {
+/* Hover — turns every stats card dark teal */
+.stat-card:hover {
   background: var(--brand);
 }
-.stat-card:hover .eyebrow,
-.stat-card--primary .eyebrow {
+.stat-card:hover .eyebrow {
   color: rgba(255, 255, 255, .6);
 }
-.stat-card:hover strong,
-.stat-card--primary strong {
+.stat-card:hover strong {
   color: #ffffff;
 }
-.stat-card:hover span,
-.stat-card--primary span {
+.stat-card:hover span {
   color: rgba(255, 255, 255, .7);
 }
 
@@ -1020,10 +1016,6 @@ button, select, input { font: inherit; }
     border: 1px solid #ddd !important;
     page-break-after: avoid;
   }
-  .stat-card--primary {
-    background: #004b46 !important;
-  }
-
   /* Dashboard layout — hide map, show nothing */
   .dashboard-layout { display: none !important; }
 
