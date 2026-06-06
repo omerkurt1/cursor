@@ -36,9 +36,9 @@ export default function Dashboard() {
     };
 
     const colors = {
-      road_damage: "#ff4757",
-      damaged_sign: "#ffa502",
-      overflowing_container: "#00d4aa",
+      road_damage: "#e14f2a",
+      damaged_sign: "#f0a202",
+      overflowing_container: "#007f73",
       traffic_sign: "#4e9cf5",
       traffic_light: "#a55eea",
     };
@@ -102,7 +102,7 @@ export default function Dashboard() {
     let sortMode = "time"; // "time" | "priority"
     let clockTimer = null;
 
-    // ── Map setup (free Leaflet + Carto dark tiles, no API key) ─────────────
+    // ── Map setup (free Leaflet + Carto light tiles, no API key) ────────────
     const map = L.map("map", {
       zoomControl: false,
       attributionControl: true,
@@ -110,9 +110,9 @@ export default function Dashboard() {
 
     L.control.zoom({ position: "bottomright" }).addTo(map);
 
-    // Free CARTO dark tiles — no API key required.
+    // Free CARTO light tiles — no API key required.
     L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
       {
         maxZoom: 19,
         attribution:
@@ -200,7 +200,7 @@ export default function Dashboard() {
 
       const marker = L.circleMarker([detection.latitude, detection.longitude], {
         radius: isSelected ? 13 : isHigh ? 10 : 8,
-        color: isSelected ? "#ffffff" : "rgba(255,255,255,.45)",
+        color: isSelected ? "#1a2b2a" : "rgba(26,43,42,.55)",
         weight: isSelected ? 3 : 2,
         fillColor: color,
         fillOpacity: 1,
@@ -227,9 +227,9 @@ export default function Dashboard() {
       const routePoints = getRoutePoints(items);
       if (routePoints.length > 1) {
         L.polyline(routePoints, {
-          color: "#00d4aa",
+          color: "#007f73",
           weight: 2,
-          opacity: 0.5,
+          opacity: 0.6,
           dashArray: "6 8",
         }).addTo(routeLayer);
       }
@@ -1215,10 +1215,11 @@ export default function Dashboard() {
                 P
               </div>
               <div>
-                <strong>Privacy before intelligence</strong>
+                <strong>Privacy by design</strong>
                 <p>
-                  Faces and license plates are irreversibly blurred before
-                  urban-object detection begins.
+                  Faces &amp; license plates are irreversibly blurred before
+                  detection begins, and raw footage is deleted after processing.
+                  Only anonymous urban-object signals are ever stored.
                 </p>
               </div>
             </div>
@@ -1279,6 +1280,11 @@ export default function Dashboard() {
               </span>
             </div>
           </div>
+
+          <p className="map-legend-note">
+            Markers show urban objects (road damage, signs, bins) — never people
+            or vehicles.
+          </p>
 
           <div id="map" aria-label="City issue map"></div>
 
@@ -1490,8 +1496,9 @@ export default function Dashboard() {
       {/* ── Privacy footer ────────────────────────────────────────── */}
       <footer className="privacy-footer">
         <span>
-          🔒 All imagery anonymized · Faces &amp; plates blurred · KVKK compliant
-          · No identity tracking · No vehicle profiling
+          🔒 Privacy by design · Faces &amp; license plates irreversibly blurred
+          before detection · Raw footage deleted after processing · KVKK
+          compliant · No identity tracking · No vehicle profiling
         </span>
       </footer>
     </div>
