@@ -26,6 +26,13 @@ import cv2
 import numpy as np
 import requests
 
+# .env dosyasini yukle (varsa)
+try:
+    from dotenv import load_dotenv as _load_dotenv
+    _load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+except ImportError:
+    pass
+
 
 STREET_VIEW_API = "https://maps.googleapis.com/maps/api/streetview"
 METADATA_API = "https://maps.googleapis.com/maps/api/streetview/metadata"

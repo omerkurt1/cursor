@@ -32,5 +32,6 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT}/health')"
 
 # Gunicorn production WSGI sunucusu kullanilir.
+# --chdir ile scripts/ dizinine gecilir; __init__.py gerekmez.
 # $PORT Render.com tarafindan inject edilir.
-CMD gunicorn --bind "0.0.0.0:${PORT}" --workers 2 --timeout 120 "scripts.serve:app"
+CMD gunicorn --chdir /app/scripts --bind "0.0.0.0:${PORT}" --workers 2 --timeout 120 "serve:app"

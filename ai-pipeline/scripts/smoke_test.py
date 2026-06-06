@@ -102,6 +102,20 @@ def test_serve_endpoints(detections_json: Path, pipeline_report_json: Path) -> N
         proc.wait(timeout=5)
 
 
+def test_gunicorn_importable() -> None:
+    """serve.py'nin gunicorn --chdir ile import edilebilir oldugunu dogrular."""
+    result = subprocess.run(
+        [PYTHON, "-c", "import sys; sys.path.insert(0, 'scripts'); import serve; assert hasattr(serve, 'app'), 'app nesnesi bulunamadi'"],
+        cwd=PROJECT_ROOT,
+        text=True,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        print(result.stderr, file=sys.stderr)
+        raise RuntimeError("serve.py gunicorn icin import edilemiyor.")
+    print("  [OK] serve:app gunicorn ile import edilebilir.")
+
+
 def test_route_pipeline_offline() -> None:
     """route_pipeline --demo-no-api --demo-fallback ile API key olmadan calisir."""
     output_dir = PROJECT_ROOT / "output" / "smoke_route"
@@ -210,10 +224,10 @@ def main() -> None:
     output_dir = PROJECT_ROOT / "output" / "smoke"
     report_dir = PROJECT_ROOT / "reports" / "smoke"
 
-    print("1/8 Demo video olusturuluyor...")
+    print("1/9 Demo video olusturuluyor...")
     run([PYTHON, "scripts/create_demo_video.py", "--output", str(input_video)])
 
-    print("2/8 Pipeline calistiriliyor...")
+    print("2/9 Pipeline calistiriliyor...")
     run(
         [
             PYTHON,
@@ -227,7 +241,7 @@ def main() -> None:
         ]
     )
 
-    print("3/8 Cikti validasyonu...")
+    print("3/9 Cikti validasyonu...")
     run(
         [
             PYTHON,
@@ -237,7 +251,7 @@ def main() -> None:
         ]
     )
 
-    print("4/8 Silme guvenlik siniri testi...")
+    print("4/9 Silme guvenlik siniri testi...")
     run(
         [
             PYTHON,
@@ -249,7 +263,7 @@ def main() -> None:
         expect_success=False,
     )
 
-    print("5/8 Fail-closed testleri...")
+    print("5/9 Fail-closed testleri...")
     test_fail_closed_on_missing_video()
     tmp_dir = Path(tempfile.mkdtemp())
     try:
@@ -257,17 +271,20 @@ def main() -> None:
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
-    print("6/8 Street View API guard testleri...")
+    print("6/9 Street View API guard testleri...")
     tmp_dir2 = Path(tempfile.mkdtemp())
     try:
         test_street_view_no_api_key(tmp_dir2)
     finally:
         shutil.rmtree(tmp_dir2, ignore_errors=True)
 
-    print("7/8 Rota pipeline offline demo testi...")
+    print("7/9 Gunicorn import testi...")
+    test_gunicorn_importable()
+
+    print("8/9 Rota pipeline offline demo testi...")
     test_route_pipeline_offline()
 
-    print("8/8 HTTP API endpoint testleri...")
+    print("9/9 HTTP API endpoint testleri...")
     test_serve_endpoints(
         detections_json=output_dir / "detections.json",
         pipeline_report_json=report_dir / "pipeline_report.json",

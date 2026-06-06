@@ -10,6 +10,13 @@ from pathlib import Path
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 
+# .env dosyasini yukle (varsa); Render.com'da env var'lar zaten inject edilir.
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+except ImportError:
+    pass
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = PROJECT_ROOT / "output"
 REPORT_DIR = PROJECT_ROOT / "reports"
