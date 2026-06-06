@@ -445,22 +445,29 @@ button, select, input { font: inherit; }
 #map {
   flex: 1; min-height: 0;
   background: var(--navy-mid);
+  position: relative;
 }
 
-/* Leaflet overrides for dark theme */
-.leaflet-tile-pane { filter: brightness(.85) contrast(1.05) saturate(0.7); }
-.leaflet-control-zoom a {
-  background: var(--navy-card) !important; color: var(--teal) !important;
-  border: 1px solid var(--navy-line) !important;
+/* Graceful loading / error message rendered into the map container */
+.map-status {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  padding: 24px; color: var(--text-dim);
+  font-size: 12px; font-weight: 600; line-height: 1.6;
+  background: var(--navy-mid);
 }
-.leaflet-control-zoom a:hover { background: var(--navy-mid) !important; }
-.leaflet-popup-content-wrapper, .leaflet-popup-tip {
-  background: var(--navy-card) !important; color: var(--text) !important;
+
+/* Google Maps InfoWindow → dark theme */
+.gm-style .gm-style-iw-c {
+  background: var(--navy-card) !important;
   border: 1px solid var(--navy-line) !important;
   box-shadow: var(--shadow-lg) !important;
   border-radius: 10px !important;
+  padding: 10px 12px !important;
 }
-.leaflet-popup-content { min-width: 180px !important; }
+.gm-style .gm-style-iw-d { overflow: hidden !important; }
+.gm-style .gm-style-iw-tc::after { background: var(--navy-card) !important; }
+.gm-style .gm-ui-hover-effect { display: none !important; }
 .map-popup span {
   display: block; color: var(--teal); font-size: 9px;
   font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
@@ -478,16 +485,6 @@ button, select, input { font: inherit; }
 .popup-priority-high   { color: var(--danger); }
 .popup-priority-medium { color: var(--amber); }
 .popup-priority-low    { color: var(--teal); }
-
-/* Pulsing marker for high priority */
-@keyframes marker-pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(255,71,87,.7); }
-  70%  { box-shadow: 0 0 0 10px rgba(255,71,87,0); }
-  100% { box-shadow: 0 0 0 0 rgba(255,71,87,0); }
-}
-.leaflet-interactive.high-priority-ring {
-  animation: marker-pulse 1.8s infinite;
-}
 
 /* ── Issue list panel ──────────────────────────────────────────────────────── */
 .issue-list-panel {
@@ -642,12 +639,16 @@ button, select, input { font: inherit; }
   background: rgba(255,165,2,.12); border: 1px solid rgba(255,165,2,.35);
 }
 .sv-frame {
-  position: relative; width: 100%; aspect-ratio: 2 / 1; min-height: 96px;
+  position: relative; width: 100%; height: 240px; min-height: 220px;
   border-radius: 10px; overflow: hidden;
   border: 1px solid var(--navy-line); background: rgba(255,255,255,.03);
 }
 .sv-frame img {
   display: block; width: 100%; height: 100%; object-fit: cover;
+}
+.sv-pano {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  display: none; background: var(--navy-mid);
 }
 .sv-placeholder {
   position: absolute; inset: 0;

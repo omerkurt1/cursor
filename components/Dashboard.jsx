@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { Loader } from "@googlemaps/js-api-loader";
 import {
   buildComplianceSummary,
   calculateStats,
@@ -103,26 +102,187 @@ export default function Dashboard() {
     let sortMode = "time"; // "time" | "priority"
     let clockTimer = null;
 
-    // ── Map setup ─────────────────────────────────────────────────────────
-    const map = L.map("map", {
-      zoomControl: false,
-      attributionControl: true,
-    }).setView([41.0082, 28.9784], 10);
+    // ── Map setup (Google Maps JavaScript API) ────────────────────────────
+    const ISTANBUL = { lat: 41.0082, lng: 28.9784 };
+    // Reuse the Street View key (already set in Vercel / .env.local). Fall back
+    // to a dedicated Maps key only if one is provided.
+    const GOOGLE_MAPS_API_KEY =
+      process.env.NEXT_PUBLIC_GOOGLE_STREETVIEW_API_KEY ||
+      process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+      "";
 
-    L.control.zoom({ position: "bottomright" }).addTo(map);
-
-    // Dark CartoDB tiles
-    L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/dark_matter/{z}/{x}/{y}{r}.png",
+    // Classic dark theme so the default raster map matches the navy UI without
+    // requiring a cloud-configured mapId.
+    const DARK_MAP_STYLES = [
+      { elementType: "geometry", stylers: [{ color: "#0f1f3d" }] },
+      { elementType: "labels.text.stroke", stylers: [{ color: "#0a1628" }] },
+      { elementType: "labels.text.fill", stylers: [{ color: "#8aa0c0" }] },
       {
-        maxZoom: 19,
-        attribution:
-          '&copy; <a href="https://carto.com/">CartoDB</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+        featureType: "administrative",
+        elementType: "geometry",
+        stylers: [{ color: "#1c2d4a" }],
       },
-    ).addTo(map);
+      {
+        featureType: "administrative.locality",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#c0cfe6" }],
+      },
+      {
+        featureType: "poi",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#5a7499" }],
+      },
+      {
+        featureType: "poi.park",
+        elementType: "geometry",
+        stylers: [{ color: "#0d2030" }],
+      },
+      {
+        featureType: "poi.park",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#3f6b5a" }],
+      },
+      {
+        featureType: "road",
+        elementType: "geometry",
+        stylers: [{ color: "#16263f" }],
+      },
+      {
+        featureType: "road",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#6f87a8" }],
+      },
+      {
+        featureType: "road.highway",
+        elementType: "geometry",
+        stylers: [{ color: "#22324f" }],
+      },
+      {
+        featureType: "road.highway",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#9fb2cf" }],
+      },
+      {
+        featureType: "transit",
+        elementType: "geometry",
+        stylers: [{ color: "#16263f" }],
+      },
+      {
+        featureType: "water",
+        elementType: "geometry",
+        stylers: [{ color: "#081020" }],
+      },
+      {
+        featureType: "water",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#3a5174" }],
+      },
+    ];
 
-    const markerLayer = L.layerGroup().addTo(map);
-    const routeLayer = L.layerGroup().addTo(map);
+    let googleApi = null;
+    let map = null;
+    let markers = [];
+    let routeLine = null;
+    let infoWindow = null;
+    let panorama = null;
+    let streetViewService = null;
+    let mapsReady = false;
+
+    function showMapMessage(message) {
+      const el = document.querySelector("#map");
+      if (el) {
+        el.innerHTML = `<div class="map-status">${escapeHtml(message)}</div>`;
+      }
+    }
+
+    // Initial bearing from a Street View panorama toward the detection point so
+    // the camera faces the asset. Uses the standard forward-azimuth formula.
+    function computeHeading(from, to) {
+      const toRad = (deg) => (deg * Math.PI) / 180;
+      const toDeg = (rad) => (rad * 180) / Math.PI;
+      const lat1 = toRad(from.lat);
+      const lat2 = toRad(to.lat);
+      const dLng = toRad(to.lng - from.lng);
+      const y = Math.sin(dLng) * Math.cos(lat2);
+      const x =
+        Math.cos(lat1) * Math.sin(lat2) -
+        Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+      return (toDeg(Math.atan2(y, x)) + 360) % 360;
+    }
+
+    function clearMarkers() {
+      markers.forEach((m) => m.setMap(null));
+      markers = [];
+      if (routeLine) {
+        routeLine.setMap(null);
+        routeLine = null;
+      }
+    }
+
+    // Google Maps + Street View are loaded client-side only (component is
+    // ssr:false). The local-pipeline API normalizer is untouched — these are
+    // separate Google HTTPS endpoints.
+    function initGoogleMaps() {
+      if (!GOOGLE_MAPS_API_KEY) {
+        showMapMessage(
+          "Google Maps unavailable — check API key / Maps JavaScript API enabled",
+        );
+        return;
+      }
+      showMapMessage("Loading map…");
+
+      const loader = new Loader({
+        apiKey: GOOGLE_MAPS_API_KEY,
+        version: "weekly",
+        libraries: ["maps", "marker", "streetView"],
+      });
+
+      loader
+        .load()
+        .then((g) => {
+          googleApi = g;
+          const mapEl = document.querySelector("#map");
+          if (!mapEl) return;
+          mapEl.innerHTML = "";
+
+          map = new g.maps.Map(mapEl, {
+            center: ISTANBUL,
+            zoom: 10,
+            disableDefaultUI: true,
+            zoomControl: true,
+            zoomControlOptions: {
+              position: g.maps.ControlPosition.RIGHT_BOTTOM,
+            },
+            backgroundColor: "#0f1f3d",
+            styles: DARK_MAP_STYLES,
+            clickableIcons: false,
+          });
+
+          infoWindow = new g.maps.InfoWindow();
+          streetViewService = new g.maps.StreetViewService();
+
+          const svContainer = document.querySelector("#detail-sv-pano");
+          if (svContainer) {
+            panorama = new g.maps.StreetViewPanorama(svContainer, {
+              visible: false,
+              addressControl: false,
+              fullscreenControl: false,
+              motionTracking: false,
+              motionTrackingControl: false,
+              enableCloseButton: false,
+              showRoadLabels: false,
+            });
+          }
+
+          mapsReady = true;
+          render();
+        })
+        .catch(() => {
+          showMapMessage(
+            "Google Maps unavailable — check API key / Maps JavaScript API enabled",
+          );
+        });
+    }
 
     // ── Live clock ─────────────────────────────────────────────────────────
     function startClock() {
@@ -199,17 +359,25 @@ export default function Dashboard() {
       const isHigh = detection.priority === "high";
       const color = colors[detection.type];
 
-      const marker = L.circleMarker([detection.latitude, detection.longitude], {
-        radius: isSelected ? 13 : isHigh ? 10 : 8,
-        color: isSelected ? "#ffffff" : "rgba(255,255,255,.45)",
-        weight: isSelected ? 3 : 2,
-        fillColor: color,
-        fillOpacity: 1,
-        className: isHigh ? "high-priority-ring" : "",
+      const marker = new googleApi.maps.Marker({
+        position: { lat: detection.latitude, lng: detection.longitude },
+        map,
+        title: `${detection.id} · ${detection.district}`,
+        zIndex: isSelected ? 1000 : isHigh ? 500 : 100,
+        icon: {
+          path: googleApi.maps.SymbolPath.CIRCLE,
+          scale: isSelected ? 11 : isHigh ? 9 : 7,
+          fillColor: color,
+          fillOpacity: 1,
+          strokeColor: isSelected ? "#ffffff" : "rgba(255,255,255,0.55)",
+          strokeWeight: isSelected ? 3 : 2,
+        },
       });
 
       const priorityClass = `popup-priority-${detection.priority}`;
-      marker.bindPopup(`
+      marker.addListener("click", () => {
+        if (infoWindow) {
+          infoWindow.setContent(`
     <div class="map-popup">
       <span>${escapeHtml(detection.id)} · ${escapeHtml(detection.district)}</span>
       <strong>${labels[detection.type]}</strong>
@@ -217,31 +385,57 @@ export default function Dashboard() {
       <b class="${priorityClass}">${detection.priority} priority · ${detection.status}</b>
     </div>
   `);
-      marker.on("click", () => selectDetection(detection.id));
+          infoWindow.open({ map, anchor: marker });
+        }
+        selectDetection(detection.id);
+      });
       return marker;
     }
 
     function renderMap(items) {
-      markerLayer.clearLayers();
-      routeLayer.clearLayers();
+      if (!mapsReady || !map) return;
+      clearMarkers();
 
       const routePoints = getRoutePoints(items);
       if (routePoints.length > 1) {
-        L.polyline(routePoints, {
-          color: "#00d4aa",
-          weight: 2,
-          opacity: 0.5,
-          dashArray: "6 8",
-        }).addTo(routeLayer);
+        routeLine = new googleApi.maps.Polyline({
+          path: routePoints.map(([lat, lng]) => ({ lat, lng })),
+          geodesic: false,
+          strokeColor: "#00d4aa",
+          strokeOpacity: 0, // dashed look via repeated icons below
+          icons: [
+            {
+              icon: {
+                path: "M 0,-1 0,1",
+                strokeColor: "#00d4aa",
+                strokeOpacity: 0.6,
+                scale: 2,
+              },
+              offset: "0",
+              repeat: "12px",
+            },
+          ],
+          map,
+        });
       }
 
-      items.forEach((d) => makeMarker(d).addTo(markerLayer));
+      markers = items.map((d) => makeMarker(d));
 
-      if (items.length) {
-        const bounds = L.latLngBounds(
-          items.map(({ latitude, longitude }) => [latitude, longitude]),
+      if (items.length === 1) {
+        map.setCenter({
+          lat: items[0].latitude,
+          lng: items[0].longitude,
+        });
+        map.setZoom(14);
+      } else if (items.length > 1) {
+        const bounds = new googleApi.maps.LatLngBounds();
+        items.forEach(({ latitude, longitude }) =>
+          bounds.extend({ lat: latitude, lng: longitude }),
         );
-        map.fitBounds(bounds, { padding: [60, 60], maxZoom: 13, animate: true });
+        map.fitBounds(bounds, 60);
+        googleApi.maps.event.addListenerOnce(map, "idle", () => {
+          if (map.getZoom() > 13) map.setZoom(13);
+        });
       }
     }
 
@@ -324,42 +518,91 @@ export default function Dashboard() {
     // development fallback and is always labeled as such. Google blurs faces and
     // license plates at the provider, so the imagery is already anonymized.
     function renderStreetView(selected) {
+      const pano = document.querySelector("#detail-sv-pano");
       const img = document.querySelector("#detail-sv-img");
       const placeholder = document.querySelector("#detail-sv-placeholder");
-      if (!img || !placeholder) return;
+      if (!pano || !img || !placeholder) return;
 
       function showPlaceholder(message) {
         img.onerror = null;
         img.removeAttribute("src");
         img.style.display = "none";
+        pano.style.display = "none";
+        if (panorama) panorama.setVisible(false);
         placeholder.style.display = "flex";
         placeholder.textContent = message;
+      }
+
+      // Static Street View image fallback (used if the interactive panorama
+      // library failed to load or has no coverage at the location).
+      function showStaticFallback(detection, message) {
+        if (!hasStreetViewKey()) {
+          showPlaceholder(message);
+          return;
+        }
+        const url = buildStreetViewUrl({
+          lat: detection.latitude,
+          lng: detection.longitude,
+        });
+        if (!url) {
+          showPlaceholder(message);
+          return;
+        }
+        if (panorama) panorama.setVisible(false);
+        pano.style.display = "none";
+        placeholder.style.display = "none";
+        img.style.display = "block";
+        img.alt = `Street View dev-fallback preview near ${detection.district}`;
+        img.onerror = () =>
+          showPlaceholder("No Street View preview available (dev fallback).");
+        img.src = url;
       }
 
       if (!selected) {
         showPlaceholder("Select a signal to preview its location (dev fallback).");
         return;
       }
-      if (!hasStreetViewKey()) {
-        showPlaceholder("Street View key not configured (dev fallback).");
+
+      const location = { lat: selected.latitude, lng: selected.longitude };
+
+      // Preferred path: interactive panorama with a coverage check.
+      if (mapsReady && googleApi && streetViewService && panorama) {
+        streetViewService.getPanorama(
+          { location, radius: 60 },
+          (data, status) => {
+            // Selection may have changed while the request was in flight.
+            if (selectedId !== selected.id) return;
+            if (
+              status === googleApi.maps.StreetViewStatus.OK &&
+              data?.location?.latLng
+            ) {
+              const panoLatLng = data.location.latLng;
+              const heading = computeHeading(
+                { lat: panoLatLng.lat(), lng: panoLatLng.lng() },
+                location,
+              );
+              img.style.display = "none";
+              placeholder.style.display = "none";
+              pano.style.display = "block";
+              panorama.setPano(data.location.pano);
+              panorama.setPov({ heading, pitch: 0 });
+              panorama.setVisible(true);
+            } else {
+              showStaticFallback(
+                selected,
+                "No Street View preview available (dev fallback).",
+              );
+            }
+          },
+        );
         return;
       }
 
-      const url = buildStreetViewUrl({
-        lat: selected.latitude,
-        lng: selected.longitude,
-      });
-      if (!url) {
-        showPlaceholder("No Street View preview available (dev fallback).");
-        return;
-      }
-
-      placeholder.style.display = "none";
-      img.style.display = "block";
-      img.alt = `Street View dev-fallback preview near ${selected.district}`;
-      img.onerror = () =>
-        showPlaceholder("No Street View preview available (dev fallback).");
-      img.src = url;
+      // Maps/Street View library not ready → static image fallback.
+      showStaticFallback(
+        selected,
+        "No Street View preview available (dev fallback).",
+      );
     }
 
     // ── Issue detail ──────────────────────────────────────────────────────
@@ -825,11 +1068,11 @@ export default function Dashboard() {
                 ? "🌆 Entire Istanbul (city-wide)"
                 : `District: ${opt.textContent}`;
           }
-          // Fly to district on map
-          map.flyTo([centroid.lat, centroid.lng], 13, {
-            animate: true,
-            duration: 1.2,
-          });
+          // Pan to district on the map.
+          if (mapsReady && map) {
+            map.panTo({ lat: centroid.lat, lng: centroid.lng });
+            map.setZoom(13);
+          }
         });
 
       // Import
@@ -912,11 +1155,16 @@ export default function Dashboard() {
     render();
     renderDeletionProof();
     renderPipelineEvidence();
+    initGoogleMaps();
 
     // ── Cleanup ─────────────────────────────────────────────────────────────
     return () => {
       if (clockTimer) clearInterval(clockTimer);
-      map.remove();
+      clearMarkers();
+      if (infoWindow) infoWindow.close();
+      if (panorama) panorama.setVisible(false);
+      map = null;
+      mapsReady = false;
       initialized.current = false;
     };
   }, []);
@@ -1404,6 +1652,7 @@ export default function Dashboard() {
             <span className="sv-badge">Dev fallback — Street View</span>
           </div>
           <div className="sv-frame" id="detail-sv-frame">
+            <div id="detail-sv-pano" className="sv-pano"></div>
             <img id="detail-sv-img" alt="Street View dev-fallback preview" />
             <div className="sv-placeholder" id="detail-sv-placeholder">
               Select a signal to preview its location (dev fallback).
