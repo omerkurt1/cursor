@@ -159,6 +159,7 @@
                 <strong id="visible-count">0 signals visible</strong>
               </div>
               <div class="map-legend" aria-label="Map legend">
+                <span><i class="route-key"></i> Scan route</span>
                 <span><i class="dot road"></i> Road</span>
                 <span><i class="dot sign"></i> Sign</span>
                 <span><i class="dot waste"></i> Waste</span>
@@ -214,6 +215,38 @@
               </li>
             </ol>
           </aside>
+        </section>
+
+        <section id="issue-detail" class="detail-panel" aria-live="polite">
+          <div>
+            <p class="eyebrow">Selected field signal</p>
+            <h2 id="detail-title">Select an issue</h2>
+            <p id="detail-summary" class="detail-summary">
+              Choose a marker or queue item to inspect its municipal action.
+            </p>
+          </div>
+          <dl class="detail-grid">
+            <div>
+              <dt>District</dt>
+              <dd id="detail-district">—</dd>
+            </div>
+            <div>
+              <dt>Confidence</dt>
+              <dd id="detail-confidence">—</dd>
+            </div>
+            <div>
+              <dt>Detected</dt>
+              <dd id="detail-time">—</dd>
+            </div>
+            <div>
+              <dt>Status</dt>
+              <dd id="detail-status">—</dd>
+            </div>
+          </dl>
+          <div class="action-note">
+            <span>Recommended action</span>
+            <strong id="detail-action">Awaiting signal selection</strong>
+          </div>
         </section>
       </main>
     </div>

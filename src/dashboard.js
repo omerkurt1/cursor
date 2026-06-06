@@ -17,6 +17,12 @@ export function calculateStats(detections) {
   };
 }
 
+export function getRoutePoints(detections) {
+  return [...detections]
+    .sort((a, b) => new Date(a.detectedAt) - new Date(b.detectedAt))
+    .map(({ latitude, longitude }) => [latitude, longitude]);
+}
+
 const allowedFields = new Set([
   "id",
   "district",

@@ -4,6 +4,7 @@ import "./styles.css";
 import {
   calculateStats,
   filterDetections,
+  getRoutePoints,
   validateDetectionImport,
 } from "./dashboard.js";
 import { detections as sampleDetections } from "./data.js";
@@ -20,6 +21,12 @@ const colors = {
   overflowing_container: "#007f73",
 };
 
+const actions = {
+  road_damage: "Create a road maintenance inspection task.",
+  damaged_sign: "Dispatch a signage team to assess and replace.",
+  overflowing_container: "Prioritize the location for waste collection.",
+};
+
 const filters = {
   district: "all",
   type: "all",
@@ -28,6 +35,7 @@ const filters = {
 };
 
 let detections = [...sampleDetections];
+let selectedId = detections[0]?.id;
 
 const map = L.map("map", {
   zoomControl: false,
@@ -40,6 +48,7 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 }).addTo(map);
 
 const markerLayer = L.layerGroup().addTo(map);
+const routeLayer = L.layerGroup().addTo(map);
 
 function populateDistricts() {
   const select = document.querySelector("#district-filter");
@@ -63,9 +72,9 @@ function escapeHtml(value) {
 function makeMarker(detection) {
   const color = colors[detection.type];
   const marker = L.circleMarker([detection.latitude, detection.longitude], {
-    radius: detection.priority === "high" ? 10 : 8,
+    radius: detection.id === selectedId ? 13 : detection.priority === "high" ? 10 : 8,
     color: "#fff8ed",
-    weight: 3,
+    weight: detection.id === selectedId ? 5 : 3,
     fillColor: color,
     fillOpacity: 1,
   });
@@ -78,12 +87,25 @@ function makeMarker(detection) {
       <b>${detection.status}</b>
     </div>
   `);
+  marker.on("click", () => selectDetection(detection.id));
 
   return marker;
 }
 
 function renderMap(items) {
   markerLayer.clearLayers();
+  routeLayer.clearLayers();
+
+  const routePoints = getRoutePoints(items);
+  if (routePoints.length > 1) {
+    L.polyline(routePoints, {
+      color: "#004b46",
+      weight: 3,
+      opacity: 0.66,
+      dashArray: "8 9",
+    }).addTo(routeLayer);
+  }
+
   items.forEach((detection) => makeMarker(detection).addTo(markerLayer));
 
   if (items.length) {
@@ -117,7 +139,7 @@ function renderIssueList(items) {
   list.innerHTML = latest
     .map(
       (item) => `
-        <article class="issue-row">
+        <button class="issue-row ${item.id === selectedId ? "selected" : ""}" type="button" data-detection-id="${escapeHtml(item.id)}">
           <i style="--issue-color: ${colors[item.type]}"></i>
           <div>
             <span>${escapeHtml(item.id)} · ${escapeHtml(item.district)}</span>
@@ -127,17 +149,58 @@ function renderIssueList(items) {
             <span class="priority ${item.priority}">${item.priority}</span>
             <small>${item.status}</small>
           </div>
-        </article>
+        </button>
       `,
     )
     .join("");
 }
 
+function renderIssueDetail(items) {
+  const selected = items.find(({ id }) => id === selectedId);
+  if (!selected) {
+    document.querySelector("#detail-title").textContent = "No signal selected";
+    document.querySelector("#detail-summary").textContent =
+      "Adjust the filters to inspect a municipal action.";
+    ["district", "confidence", "time", "status"].forEach((field) => {
+      document.querySelector(`#detail-${field}`).textContent = "—";
+    });
+    document.querySelector("#detail-action").textContent =
+      "Awaiting signal selection";
+    return;
+  }
+
+  document.querySelector("#detail-title").textContent = labels[selected.type];
+  document.querySelector("#detail-summary").textContent =
+    `${selected.id} is marked ${selected.priority} priority and is ready for municipal review.`;
+  document.querySelector("#detail-district").textContent = selected.district;
+  document.querySelector("#detail-confidence").textContent =
+    `${Math.round(selected.confidence * 100)}%`;
+  document.querySelector("#detail-time").textContent = new Intl.DateTimeFormat(
+    "en-GB",
+    { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" },
+  ).format(new Date(selected.detectedAt));
+  document.querySelector("#detail-status").textContent = selected.status;
+  document.querySelector("#detail-action").textContent = actions[selected.type];
+}
+
+function selectDetection(id) {
+  selectedId = id;
+  render();
+  document.querySelector("#issue-detail").scrollIntoView({
+    behavior: "smooth",
+    block: "nearest",
+  });
+}
+
 function render() {
   const visible = filterDetections(detections, filters);
+  if (!visible.some(({ id }) => id === selectedId)) {
+    selectedId = visible[0]?.id;
+  }
   renderStats(visible);
   renderMap(visible);
   renderIssueList(visible);
+  renderIssueDetail(visible);
   document.querySelector("#visible-count").textContent =
     `${visible.length} signal${visible.length === 1 ? "" : "s"} visible`;
   document.querySelector("#queue-count").textContent =
@@ -161,6 +224,7 @@ async function importDetections(file) {
   try {
     const parsed = JSON.parse(await file.text());
     detections = [...validateDetectionImport(parsed)];
+    selectedId = detections[0]?.id;
     populateDistricts();
     resetFilters();
     render();
@@ -190,6 +254,11 @@ function bindControls() {
     const [file] = event.target.files;
     if (file) importDetections(file);
     event.target.value = "";
+  });
+
+  document.querySelector("#issue-list").addEventListener("click", (event) => {
+    const item = event.target.closest("[data-detection-id]");
+    if (item) selectDetection(item.dataset.detectionId);
   });
 }
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   calculateStats,
   filterDetections,
+  getRoutePoints,
   validateDetectionImport,
 } from "./dashboard.js";
 
@@ -97,5 +98,27 @@ describe("validateDetectionImport", () => {
     expect(() =>
       validateDetectionImport([{ ...validDetection, latitude: 140 }]),
     ).toThrow(/latitude/i);
+  });
+});
+
+describe("getRoutePoints", () => {
+  it("builds a chronological route from detection coordinates", () => {
+    const route = getRoutePoints([
+      {
+        latitude: 41.02,
+        longitude: 29.02,
+        detectedAt: "2026-06-06T10:02:00+03:00",
+      },
+      {
+        latitude: 41.01,
+        longitude: 29.01,
+        detectedAt: "2026-06-06T10:01:00+03:00",
+      },
+    ]);
+
+    expect(route).toEqual([
+      [41.01, 29.01],
+      [41.02, 29.02],
+    ]);
   });
 });
