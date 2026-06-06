@@ -54,9 +54,8 @@ button, select, input { font: inherit; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--cream);
-  border-bottom: 1px solid var(--line);
-  backdrop-filter: blur(18px);
+  background: var(--brand);
+  border-bottom: 1px solid rgba(255, 255, 255, .1);
   position: relative;
   z-index: 1000;
   gap: 16px;
@@ -66,28 +65,28 @@ button, select, input { font: inherit; }
   display: flex;
   align-items: center;
   gap: 11px;
-  color: var(--text);
+  color: #ffffff;
   text-decoration: none;
   flex-shrink: 0;
 }
 
-.brand strong { display: block; font-family: "Syne", sans-serif; font-size: 16px; letter-spacing: -0.03em; }
-.brand small  { display: block; color: var(--teal); font-size: 9px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; margin-top: 1px; }
+.brand strong { display: block; font-family: "Syne", sans-serif; font-size: 16px; letter-spacing: -0.03em; color: #ffffff; }
+.brand small  { display: block; color: rgba(255, 255, 255, .7); font-size: 9px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; margin-top: 1px; }
 
 .brand-mark {
   width: 34px; height: 34px;
   display: grid; grid-template-columns: repeat(3, 1fr); align-items: end; gap: 3px;
-  padding: 7px; border-radius: 50%; background: var(--surface);
-  border: 1px solid var(--line);
+  padding: 7px; border-radius: 50%; background: rgba(255, 255, 255, .15);
+  border: 1px solid rgba(255, 255, 255, .25);
 }
-.brand-mark span { display: block; border-radius: 2px 2px 0 0; background: var(--muted); }
+.brand-mark span { display: block; border-radius: 2px 2px 0 0; background: rgba(255, 255, 255, .5); }
 .brand-mark span:nth-child(1) { height: 40%; }
-.brand-mark span:nth-child(2) { height: 90%; background: var(--teal); }
+.brand-mark span:nth-child(2) { height: 90%; background: #ffffff; }
 .brand-mark span:nth-child(3) { height: 65%; }
 
 .topbar-center {
   display: flex; align-items: center; gap: 8px;
-  color: var(--text-dim); font-size: 11px;
+  color: rgba(255, 255, 255, .7); font-size: 11px;
 }
 
 .topbar-right {
@@ -97,12 +96,12 @@ button, select, input { font: inherit; }
 
 #live-clock {
   font-family: "Syne", monospace; font-size: 13px; letter-spacing: .08em;
-  color: var(--brand);
+  color: #ffffff;
 }
 
 .connection-indicator {
   display: flex; align-items: center; gap: 6px;
-  font-size: 10px; color: var(--text-dim);
+  font-size: 10px; color: rgba(255, 255, 255, .7);
 }
 .conn-dot {
   width: 7px; height: 7px; border-radius: 50%;
