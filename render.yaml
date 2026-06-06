@@ -10,3 +10,21 @@ services:
         sync: false   # Render dashboard'dan manuel gir
     healthCheckPath: /health
     autoDeploy: false
+
+  - type: web
+    name: city-backend
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    plan: free
+    envVars:
+      - key: PIPELINE_URL
+        value: https://ai-privacy-pipeline.onrender.com
+      - key: ALLOWED_ORIGINS
+        sync: false   # Vercel domain'ini buraya gir (ör. https://your-app.vercel.app)
+      - key: CACHE_TTL_SECONDS
+        value: "30"
+      - key: RATE_LIMIT_RPS
+        value: "30"
+    healthCheckPath: /health
+    autoDeploy: false
