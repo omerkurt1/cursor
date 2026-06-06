@@ -7,6 +7,7 @@ import {
   createDemoDetections,
   normalizePipelineDetections,
   normalizeLocalApiUrl,
+  normalizePipelineReport,
   normalizeDeletionReport,
   updateDetectionStatus,
   validateDetectionImport,
@@ -297,5 +298,80 @@ describe("normalizeLocalApiUrl", () => {
       /local machine/i,
     );
     expect(() => normalizeLocalApiUrl("not-a-url")).toThrow(/valid URL/i);
+  });
+});
+
+describe("normalizePipelineReport", () => {
+  it("keeps only useful pipeline evidence and discards paths", () => {
+    expect(
+      normalizePipelineReport({
+        input_video: "C:/private/raw.mp4",
+        source: "google_street_view",
+        demo_fallback_used: false,
+        raw_detection_count: 8,
+        deduped_detection_count: 5,
+        anonymization: {
+          processed_frames: 240,
+          blurred_faces: 3,
+          blurred_license_plates: 7,
+          input: "C:/private/raw.mp4",
+        },
+        privacy_guardrails: {
+          runs_detection_after_anonymization: true,
+          anonymization_succeeded: true,
+          stores_raw_frames: false,
+          json_contains_identity_data: false,
+        },
+      }),
+    ).toEqual({
+      mode: "real_model",
+      source: "google_street_view",
+      rawDetectionCount: 8,
+      dedupedDetectionCount: 5,
+      processedFrames: 240,
+      blurredFaces: 3,
+      blurredLicensePlates: 7,
+      guardrailsVerified: true,
+    });
+  });
+
+  it("defaults older pipeline reports to municipal vehicle camera source", () => {
+    expect(
+      normalizePipelineReport({
+        demo_fallback_used: true,
+        raw_detection_count: 1,
+        deduped_detection_count: 1,
+        anonymization: {
+          processed_frames: 10,
+          blurred_faces: 0,
+          blurred_license_plates: 0,
+        },
+        privacy_guardrails: {
+          runs_detection_after_anonymization: true,
+          stores_raw_frames: false,
+          json_contains_identity_data: false,
+        },
+      }).source,
+    ).toBe("vehicle_camera");
+  });
+
+  it("rejects reports without verified privacy guardrails", () => {
+    expect(() =>
+      normalizePipelineReport({
+        demo_fallback_used: true,
+        raw_detection_count: 1,
+        deduped_detection_count: 1,
+        anonymization: {
+          processed_frames: 10,
+          blurred_faces: 0,
+          blurred_license_plates: 0,
+        },
+        privacy_guardrails: {
+          runs_detection_after_anonymization: false,
+          stores_raw_frames: false,
+          json_contains_identity_data: false,
+        },
+      }),
+    ).toThrow(/privacy guardrails/i);
   });
 });

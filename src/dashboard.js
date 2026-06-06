@@ -283,3 +283,60 @@ export function normalizeLocalApiUrl(value) {
 
   return url.origin;
 }
+
+function requireNonNegativeInteger(value, field) {
+  if (!Number.isInteger(value) || value < 0) {
+    throw new Error(`Pipeline report "${field}" must be a non-negative integer.`);
+  }
+  return value;
+}
+
+export function normalizePipelineReport(report) {
+  if (!report || typeof report !== "object" || Array.isArray(report)) {
+    throw new Error("Pipeline report must be a JSON object.");
+  }
+
+  const guardrails = report.privacy_guardrails;
+  const guardrailsVerified =
+    guardrails?.runs_detection_after_anonymization === true &&
+    guardrails?.stores_raw_frames === false &&
+    guardrails?.json_contains_identity_data === false &&
+    guardrails?.anonymization_succeeded !== false;
+  if (!guardrailsVerified) {
+    throw new Error("Pipeline privacy guardrails are not verified.");
+  }
+
+  const anonymization = report.anonymization;
+  if (!anonymization || typeof anonymization !== "object") {
+    throw new Error("Pipeline report must include anonymization evidence.");
+  }
+
+  return {
+    mode: report.demo_fallback_used ? "demo_fallback" : "real_model",
+    source:
+      report.source === "google_street_view"
+        ? "google_street_view"
+        : "vehicle_camera",
+    rawDetectionCount: requireNonNegativeInteger(
+      report.raw_detection_count,
+      "raw_detection_count",
+    ),
+    dedupedDetectionCount: requireNonNegativeInteger(
+      report.deduped_detection_count,
+      "deduped_detection_count",
+    ),
+    processedFrames: requireNonNegativeInteger(
+      anonymization.processed_frames,
+      "processed_frames",
+    ),
+    blurredFaces: requireNonNegativeInteger(
+      anonymization.blurred_faces,
+      "blurred_faces",
+    ),
+    blurredLicensePlates: requireNonNegativeInteger(
+      anonymization.blurred_license_plates,
+      "blurred_license_plates",
+    ),
+    guardrailsVerified,
+  };
+}

@@ -10,6 +10,7 @@ import {
   normalizeDeletionReport,
   normalizeLocalApiUrl,
   normalizePipelineDetections,
+  normalizePipelineReport,
   updateDetectionStatus,
   validateDetectionImport,
 } from "./dashboard.js";
@@ -49,6 +50,7 @@ const filters = {
 let detections = createDemoDetections(sampleDetections);
 let selectedId = detections[0]?.id;
 let deletionReport = null;
+let pipelineReport = null;
 
 const map = L.map("map", {
   zoomControl: false,
@@ -299,6 +301,31 @@ function renderDeletionProof() {
     : "Deletion evidence has not been imported.";
 }
 
+function renderPipelineEvidence() {
+  document.querySelector("#evidence-mode").textContent = pipelineReport
+    ? pipelineReport.mode === "real_model"
+      ? "Real model output"
+      : "Clearly labeled demo fallback"
+    : "Not connected";
+  document.querySelector("#evidence-guardrail").textContent = pipelineReport
+    ? "Guardrails verified"
+    : "Awaiting proof";
+  document.querySelector("#evidence-source").textContent = pipelineReport
+    ? pipelineReport.source === "google_street_view"
+      ? "Street View fallback"
+      : "Vehicle camera"
+    : "—";
+  document.querySelector("#evidence-frames").textContent =
+    pipelineReport?.processedFrames ?? "—";
+  document.querySelector("#evidence-faces").textContent =
+    pipelineReport?.blurredFaces ?? "—";
+  document.querySelector("#evidence-plates").textContent =
+    pipelineReport?.blurredLicensePlates ?? "—";
+  document.querySelector("#evidence-detections").textContent = pipelineReport
+    ? `${pipelineReport.dedupedDetectionCount} / ${pipelineReport.rawDetectionCount}`
+    : "—";
+}
+
 async function importDeletionReport(file) {
   try {
     deletionReport = normalizeDeletionReport(JSON.parse(await file.text()));
@@ -342,6 +369,9 @@ async function connectPipeline() {
       throw new Error("Connected service is not the expected AI privacy pipeline.");
     }
 
+    pipelineReport = normalizePipelineReport(
+      await fetchJson(`${baseUrl}/api/pipeline-report`, "Pipeline report"),
+    );
     detections = normalizePipelineDetections(
       await fetchJson(`${baseUrl}/api/detections`, "Detections"),
     );
@@ -349,6 +379,7 @@ async function connectPipeline() {
     populateDistricts();
     resetFilters();
     render();
+    renderPipelineEvidence();
 
     try {
       deletionReport = normalizeDeletionReport(
@@ -364,6 +395,8 @@ async function connectPipeline() {
       `${detections.length} live detection(s) loaded from the local privacy pipeline.`;
     status.dataset.state = "success";
   } catch (error) {
+    pipelineReport = null;
+    renderPipelineEvidence();
     status.textContent = error.message;
     status.dataset.state = "error";
   } finally {
@@ -394,10 +427,12 @@ function bindControls() {
     detections = createDemoDetections(sampleDetections);
     selectedId = detections[0]?.id;
     deletionReport = null;
+    pipelineReport = null;
     populateDistricts();
     resetFilters();
     render();
     renderDeletionProof();
+    renderPipelineEvidence();
     showImportStatus("Built-in demonstration dataset restored.", "success");
     const deletionStatus = document.querySelector("#deletion-status");
     deletionStatus.textContent = "Waiting for raw-data deletion proof.";
@@ -447,3 +482,4 @@ populateDistricts();
 bindControls();
 render();
 renderDeletionProof();
+renderPipelineEvidence();

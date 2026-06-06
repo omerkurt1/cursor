@@ -19,6 +19,10 @@
    The dashboard automatically adapts the current five-field AI pipeline output.
    For the strongest demo, run the pipeline API on `127.0.0.1:8000` and click
    **Connect live pipeline**.
+   Point out whether the evidence panel says **Real model output** or
+   **Clearly labeled demo fallback**, then show anonymization and dedupe counts.
+   If the source says **Street View fallback**, explicitly state that it is a
+   development fallback and the production source remains municipal vehicle cameras.
 6. **Compliance:** Import deletion proof and export the minimized audit summary.
 7. **Close:** UrbanPulse helps municipalities see earlier, respond faster, and
    use existing public resources more effectively.

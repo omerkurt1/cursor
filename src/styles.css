@@ -506,6 +506,50 @@ h2 {
   gap: 10px;
 }
 
+.pipeline-evidence {
+  grid-column: 1 / -1;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.pipeline-evidence .count-pill {
+  color: var(--teal-dark);
+}
+
+.evidence-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.evidence-grid article {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fffdf8;
+}
+
+.evidence-grid span,
+.evidence-grid strong {
+  display: block;
+}
+
+.evidence-grid span {
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.evidence-grid strong {
+  margin-top: 8px;
+  color: var(--teal-dark);
+  font-size: 24px;
+  letter-spacing: -0.05em;
+}
+
 .check-card {
   padding: 16px;
   display: grid;
@@ -1039,6 +1083,10 @@ h2 {
   .compliance-console {
     grid-template-columns: 1fr;
   }
+
+  .evidence-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 620px) {
@@ -1115,5 +1163,9 @@ h2 {
   .check-card b {
     grid-column: 2;
     justify-self: start;
+  }
+
+  .evidence-grid {
+    grid-template-columns: 1fr;
   }
 }
