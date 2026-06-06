@@ -12,6 +12,7 @@ import {
   updateDetectionStatus,
   validateDetectionImport,
 } from "./dashboard.js";
+import { detections as sampleDetections } from "./data.js";
 
 const detections = [
   {
@@ -59,6 +60,17 @@ describe("filterDetections", () => {
       }),
     ).toEqual(detections);
   });
+
+  it("returns empty array when no detections match", () => {
+    expect(
+      filterDetections(detections, {
+        district: "Fatih",
+        type: "all",
+        priority: "all",
+        status: "all",
+      }),
+    ).toEqual([]);
+  });
 });
 
 describe("calculateStats", () => {
@@ -68,6 +80,15 @@ describe("calculateStats", () => {
       urgent: 2,
       resolved: 1,
       districts: 2,
+    });
+  });
+
+  it("returns zeros for empty dataset", () => {
+    expect(calculateStats([])).toEqual({
+      total: 0,
+      urgent: 0,
+      resolved: 0,
+      districts: 0,
     });
   });
 });
@@ -106,6 +127,18 @@ describe("validateDetectionImport", () => {
       validateDetectionImport([{ ...validDetection, latitude: 140 }]),
     ).toThrow(/latitude/i);
   });
+
+  it("rejects confidence outside 0-1 range", () => {
+    expect(() =>
+      validateDetectionImport([{ ...validDetection, confidence: 1.5 }]),
+    ).toThrow(/confidence/i);
+  });
+
+  it("rejects invalid type values", () => {
+    expect(() =>
+      validateDetectionImport([{ ...validDetection, type: "pothole" }]),
+    ).toThrow(/type/i);
+  });
 });
 
 describe("getRoutePoints", () => {
@@ -127,6 +160,10 @@ describe("getRoutePoints", () => {
       [41.01, 29.01],
       [41.02, 29.02],
     ]);
+  });
+
+  it("returns empty array for no detections", () => {
+    expect(getRoutePoints([])).toEqual([]);
   });
 });
 
@@ -190,6 +227,13 @@ describe("buildComplianceSummary", () => {
         verified: true,
         deletedFileCount: 4,
       },
+    });
+  });
+
+  it("returns pending status when no deletion report provided", () => {
+    expect(buildComplianceSummary(detections, null)).toMatchObject({
+      status: "pending_deletion_proof",
+      rawDataDeletion: { verified: false },
     });
   });
 });
@@ -280,6 +324,32 @@ describe("normalizePipelineDetections", () => {
         },
       ]),
     ).toThrow(/unsupported pipeline type/i);
+  });
+
+  it("assigns low priority for confidence below 0.75", () => {
+    const result = normalizePipelineDetections([
+      {
+        type: "damaged_sign",
+        latitude: 41.021,
+        longitude: 28.874,
+        confidence: 0.6,
+        timestamp: "00:01:00",
+      },
+    ]);
+    expect(result[0].priority).toBe("low");
+  });
+
+  it("assigns medium priority for confidence between 0.75 and 0.9", () => {
+    const result = normalizePipelineDetections([
+      {
+        type: "damaged_sign",
+        latitude: 41.021,
+        longitude: 28.874,
+        confidence: 0.82,
+        timestamp: "00:01:00",
+      },
+    ]);
+    expect(result[0].priority).toBe("medium");
   });
 });
 
@@ -388,5 +458,103 @@ describe("normalizePipelineReport", () => {
         },
       }),
     ).toThrow(/privacy guardrails/i);
+  });
+});
+
+// ── City-wide data tests ──────────────────────────────────────────────────────
+describe("city-wide Istanbul data", () => {
+  it("sample dataset has at least 60 detections", () => {
+    expect(sampleDetections.length).toBeGreaterThanOrEqual(60);
+  });
+
+  it("sample dataset covers at least 20 different districts", () => {
+    const districts = new Set(sampleDetections.map((d) => d.district));
+    expect(districts.size).toBeGreaterThanOrEqual(20);
+  });
+
+  it("all detections have valid types", () => {
+    const validTypes = new Set([
+      "road_damage", "damaged_sign", "overflowing_container",
+      "traffic_sign", "traffic_light",
+    ]);
+    sampleDetections.forEach((d) => {
+      expect(validTypes.has(d.type)).toBe(true);
+    });
+  });
+
+  it("all detections have valid priorities", () => {
+    const validPriorities = new Set(["high", "medium", "low"]);
+    sampleDetections.forEach((d) => {
+      expect(validPriorities.has(d.priority)).toBe(true);
+    });
+  });
+
+  it("all detections have valid statuses", () => {
+    const validStatuses = new Set(["new", "assigned", "resolved"]);
+    sampleDetections.forEach((d) => {
+      expect(validStatuses.has(d.status)).toBe(true);
+    });
+  });
+
+  it("all detections have realistic Istanbul coordinates", () => {
+    sampleDetections.forEach((d) => {
+      // Istanbul lat range ~40.8–41.3, lng ~28.0–29.5
+      expect(d.latitude).toBeGreaterThan(40.5);
+      expect(d.latitude).toBeLessThan(41.5);
+      expect(d.longitude).toBeGreaterThan(27.5);
+      expect(d.longitude).toBeLessThan(30.0);
+    });
+  });
+
+  it("all detections have unique IDs", () => {
+    const ids = sampleDetections.map((d) => d.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("all detections have valid ISO timestamps", () => {
+    sampleDetections.forEach((d) => {
+      expect(Number.isNaN(Date.parse(d.detectedAt))).toBe(false);
+    });
+  });
+
+  it("includes a mix of all three issue types", () => {
+    const types = new Set(sampleDetections.map((d) => d.type));
+    expect(types.has("road_damage")).toBe(true);
+    expect(types.has("damaged_sign")).toBe(true);
+    expect(types.has("overflowing_container")).toBe(true);
+  });
+
+  it("includes all three statuses", () => {
+    const statuses = new Set(sampleDetections.map((d) => d.status));
+    expect(statuses.has("new")).toBe(true);
+    expect(statuses.has("assigned")).toBe(true);
+    expect(statuses.has("resolved")).toBe(true);
+  });
+
+  it("calculateStats works correctly on the full city dataset", () => {
+    const stats = calculateStats(sampleDetections);
+    expect(stats.total).toBe(sampleDetections.length);
+    expect(stats.urgent).toBe(sampleDetections.filter((d) => d.priority === "high").length);
+    expect(stats.resolved).toBe(sampleDetections.filter((d) => d.status === "resolved").length);
+    expect(stats.districts).toBeGreaterThanOrEqual(20);
+  });
+
+  it("filterDetections correctly filters city-wide data by district", () => {
+    const result = filterDetections(sampleDetections, {
+      district: "Kadikoy",
+      type: "all",
+      priority: "all",
+      status: "all",
+    });
+    expect(result.length).toBeGreaterThan(0);
+    result.forEach((d) => expect(d.district).toBe("Kadikoy"));
+  });
+
+  it("createDemoDetections produces a copy of city-wide data", () => {
+    const demo = createDemoDetections(sampleDetections);
+    expect(demo.length).toBe(sampleDetections.length);
+    // Mutations to demo don't affect sampleDetections
+    demo[0].status = "resolved";
+    expect(sampleDetections[0].status).not.toBe("resolved");
   });
 });
