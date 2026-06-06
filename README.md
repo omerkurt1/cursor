@@ -41,9 +41,15 @@ npm run build
 
 These branches build on each other and should be merged in this order:
 
-1. `codex/privacy-safe-json-import`
-2. `codex/issue-details-route-coverage`
-3. `codex/municipal-action-workflow`
-4. `codex/compliance-audit-export`
-5. `codex/demo-readiness`
-6. `codex/ai-pipeline-adapter`
+1. `codex/omer-privacy-safe-json-import`
+2. `codex/omer-issue-details-route-coverage`
+3. `codex/omer-municipal-action-workflow`
+4. `codex/omer-compliance-audit-export`
+5. `codex/omer-demo-readiness`
+6. `codex/omer-ai-pipeline-adapter`
+
+## Branch Ownership
+
+- Ömer branches: `codex/omer-<feature-name>`
+- Mert branches: `mert/<feature-name>`
+- Do not commit feature work directly to `main`.
