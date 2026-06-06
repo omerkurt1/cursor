@@ -12,7 +12,6 @@ import {
   normalizeDeletionReport,
   normalizeLocalApiUrl,
   normalizePipelineDetections,
-  normalizePipelineReport,
   updateDetectionStatus,
   validateDetectionImport,
 } from "../src/dashboard.js";
@@ -106,7 +105,6 @@ export default function Dashboard() {
     let detections = createDemoDetections(sampleDetections);
     let selectedId = detections[0]?.id;
     let deletionReport = null;
-    let pipelineReport = null;
     let scanWaypoints = null;
     let sortMode = "time"; // "time" | "priority"
     let clockTimer = null;
@@ -463,32 +461,6 @@ export default function Dashboard() {
             { dateStyle: "medium", timeStyle: "short" },
           ).format(new Date(deletionReport.deletedAt))}.`
         : "Deletion evidence has not been imported.";
-    }
-
-    // ── Pipeline evidence ──────────────────────────────────────────────────
-    function renderPipelineEvidence() {
-      document.querySelector("#evidence-mode").textContent = pipelineReport
-        ? pipelineReport.mode === "real_model"
-          ? "Real model output"
-          : "Clearly labeled demo fallback"
-        : "Not connected";
-      document.querySelector("#evidence-guardrail").textContent = pipelineReport
-        ? "Guardrails verified"
-        : "Awaiting proof";
-      document.querySelector("#evidence-source").textContent = pipelineReport
-        ? pipelineReport.source === "vehicle_camera"
-          ? "Municipal vehicle cameras"
-          : "External imagery (dev fallback)"
-        : "—";
-      document.querySelector("#evidence-frames").textContent =
-        pipelineReport?.processedFrames ?? "—";
-      document.querySelector("#evidence-faces").textContent =
-        pipelineReport?.blurredFaces ?? "—";
-      document.querySelector("#evidence-plates").textContent =
-        pipelineReport?.blurredLicensePlates ?? "—";
-      document.querySelector("#evidence-detections").textContent = pipelineReport
-        ? `${pipelineReport.dedupedDetectionCount} / ${pipelineReport.rawDetectionCount}`
-        : "—";
     }
 
     // ── Connection indicator ───────────────────────────────────────────────
@@ -850,7 +822,6 @@ export default function Dashboard() {
     bindControls();
     render();
     renderDeletionProof();
-    renderPipelineEvidence();
 
     // Auto-connect to the local AI pipeline on load
     connectPipeline();

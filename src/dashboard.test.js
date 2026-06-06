@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import {
   calculateStats,
   filterDetections,
@@ -13,6 +14,17 @@ import {
   validateDetectionImport,
 } from "./dashboard.js";
 import { detections as sampleDetections } from "./data.js";
+
+describe("Dashboard JSX integration", () => {
+  it("does not reference the removed pipeline evidence panel", () => {
+    const dashboardSource = readFileSync(
+      new URL("../components/Dashboard.jsx", import.meta.url),
+      "utf8",
+    );
+
+    expect(dashboardSource).not.toMatch(/#evidence-/);
+  });
+});
 
 const detections = [
   {
