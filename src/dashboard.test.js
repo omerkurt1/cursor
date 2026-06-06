@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { calculateStats, filterDetections } from "./dashboard.js";
+import {
+  calculateStats,
+  filterDetections,
+  validateDetectionImport,
+} from "./dashboard.js";
 
 const detections = [
   {
@@ -57,5 +61,41 @@ describe("calculateStats", () => {
       resolved: 1,
       districts: 2,
     });
+  });
+});
+
+describe("validateDetectionImport", () => {
+  const validDetection = {
+    id: "DET-100",
+    district: "Kadikoy",
+    type: "road_damage",
+    latitude: 40.9903,
+    longitude: 29.0284,
+    confidence: 0.94,
+    priority: "high",
+    status: "new",
+    detectedAt: "2026-06-06T10:30:00+03:00",
+  };
+
+  it("accepts a valid minimal detection dataset", () => {
+    expect(validateDetectionImport([validDetection])).toEqual([validDetection]);
+  });
+
+  it("rejects forbidden personal or tracking data fields", () => {
+    expect(() =>
+      validateDetectionImport([{ ...validDetection, plate: "34 ABC 123" }]),
+    ).toThrow(/forbidden field "plate"/i);
+  });
+
+  it("rejects unknown fields to enforce data minimization", () => {
+    expect(() =>
+      validateDetectionImport([{ ...validDetection, cameraImage: "frame.jpg" }]),
+    ).toThrow(/unexpected field "cameraImage"/i);
+  });
+
+  it("rejects malformed detection values", () => {
+    expect(() =>
+      validateDetectionImport([{ ...validDetection, latitude: 140 }]),
+    ).toThrow(/latitude/i);
   });
 });

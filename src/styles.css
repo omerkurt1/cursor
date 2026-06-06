@@ -331,13 +331,75 @@ h2 {
 }
 
 .privacy-card {
-  margin-top: 38px;
+  margin-top: 18px;
   padding: 18px;
   display: flex;
   gap: 12px;
   color: var(--card);
   border-radius: 12px;
   background: var(--teal-dark);
+}
+
+.import-panel {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.import-panel > strong {
+  display: block;
+  font-size: 13px;
+}
+
+.import-panel > p:not(.eyebrow) {
+  margin: 7px 0 13px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.import-button {
+  padding: 11px 13px;
+  display: block;
+  color: var(--card);
+  border-radius: 8px;
+  background: var(--teal);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+#detection-import {
+  width: 1px;
+  height: 1px;
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.import-status {
+  margin-top: 9px;
+  padding: 9px 10px;
+  color: var(--muted);
+  border-radius: 7px;
+  background: #f3eee3;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.import-status[data-state="success"] {
+  color: var(--teal-dark);
+  background: rgba(0, 127, 115, 0.12);
+}
+
+.import-status[data-state="error"] {
+  color: #a6321b;
+  background: rgba(225, 79, 42, 0.12);
 }
 
 .privacy-icon {

@@ -1,0 +1,24 @@
+[
+  {
+    "id": "AI-001",
+    "district": "Kadikoy",
+    "type": "road_damage",
+    "latitude": 40.9903,
+    "longitude": 29.0284,
+    "confidence": 0.94,
+    "priority": "high",
+    "status": "new",
+    "detectedAt": "2026-06-06T10:30:00+03:00"
+  },
+  {
+    "id": "AI-002",
+    "district": "Besiktas",
+    "type": "damaged_sign",
+    "latitude": 41.043,
+    "longitude": 29.008,
+    "confidence": 0.91,
+    "priority": "medium",
+    "status": "assigned",
+    "detectedAt": "2026-06-06T10:31:00+03:00"
+  }
+]

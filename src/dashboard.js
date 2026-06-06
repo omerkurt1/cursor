@@ -16,3 +16,110 @@ export function calculateStats(detections) {
     districts: new Set(detections.map((detection) => detection.district)).size,
   };
 }
+
+const allowedFields = new Set([
+  "id",
+  "district",
+  "type",
+  "latitude",
+  "longitude",
+  "confidence",
+  "priority",
+  "status",
+  "detectedAt",
+]);
+
+const forbiddenFields = new Set([
+  "face",
+  "faceid",
+  "identity",
+  "licenseplate",
+  "person",
+  "personid",
+  "plate",
+  "trackingid",
+  "vehicle",
+  "vehicleid",
+]);
+
+const allowedTypes = new Set([
+  "road_damage",
+  "damaged_sign",
+  "overflowing_container",
+]);
+const allowedPriorities = new Set(["high", "medium", "low"]);
+const allowedStatuses = new Set(["new", "assigned", "resolved"]);
+
+function requireText(detection, field, index) {
+  if (
+    typeof detection[field] !== "string" ||
+    detection[field].trim().length === 0
+  ) {
+    throw new Error(`Detection ${index + 1}: "${field}" must be non-empty text.`);
+  }
+}
+
+function requireAllowedValue(detection, field, values, index) {
+  if (!values.has(detection[field])) {
+    throw new Error(`Detection ${index + 1}: invalid "${field}" value.`);
+  }
+}
+
+function validateDetection(detection, index) {
+  if (!detection || typeof detection !== "object" || Array.isArray(detection)) {
+    throw new Error(`Detection ${index + 1}: each entry must be an object.`);
+  }
+
+  Object.keys(detection).forEach((field) => {
+    if (forbiddenFields.has(field.toLowerCase())) {
+      throw new Error(`Detection ${index + 1}: forbidden field "${field}".`);
+    }
+    if (!allowedFields.has(field)) {
+      throw new Error(`Detection ${index + 1}: unexpected field "${field}".`);
+    }
+  });
+
+  ["id", "district", "detectedAt"].forEach((field) =>
+    requireText(detection, field, index),
+  );
+  requireAllowedValue(detection, "type", allowedTypes, index);
+  requireAllowedValue(detection, "priority", allowedPriorities, index);
+  requireAllowedValue(detection, "status", allowedStatuses, index);
+
+  if (
+    typeof detection.latitude !== "number" ||
+    detection.latitude < -90 ||
+    detection.latitude > 90
+  ) {
+    throw new Error(`Detection ${index + 1}: invalid "latitude" value.`);
+  }
+  if (
+    typeof detection.longitude !== "number" ||
+    detection.longitude < -180 ||
+    detection.longitude > 180
+  ) {
+    throw new Error(`Detection ${index + 1}: invalid "longitude" value.`);
+  }
+  if (
+    typeof detection.confidence !== "number" ||
+    detection.confidence < 0 ||
+    detection.confidence > 1
+  ) {
+    throw new Error(`Detection ${index + 1}: invalid "confidence" value.`);
+  }
+  if (Number.isNaN(Date.parse(detection.detectedAt))) {
+    throw new Error(`Detection ${index + 1}: invalid "detectedAt" value.`);
+  }
+}
+
+export function validateDetectionImport(value) {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error("Import must contain a non-empty array of detections.");
+  }
+  if (value.length > 5000) {
+    throw new Error("Import cannot contain more than 5,000 detections.");
+  }
+
+  value.forEach(validateDetection);
+  return value;
+}

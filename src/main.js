@@ -1,8 +1,12 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./styles.css";
-import { calculateStats, filterDetections } from "./dashboard.js";
-import { detections } from "./data.js";
+import {
+  calculateStats,
+  filterDetections,
+  validateDetectionImport,
+} from "./dashboard.js";
+import { detections as sampleDetections } from "./data.js";
 
 const labels = {
   road_damage: "Road damage",
@@ -22,6 +26,8 @@ const filters = {
   priority: "all",
   status: "all",
 };
+
+let detections = [...sampleDetections];
 
 const map = L.map("map", {
   zoomControl: false,
@@ -45,6 +51,15 @@ function populateDistricts() {
   });
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function makeMarker(detection) {
   const color = colors[detection.type];
   const marker = L.circleMarker([detection.latitude, detection.longitude], {
@@ -57,7 +72,7 @@ function makeMarker(detection) {
 
   marker.bindPopup(`
     <div class="map-popup">
-      <span>${detection.id} · ${detection.district}</span>
+      <span>${escapeHtml(detection.id)} · ${escapeHtml(detection.district)}</span>
       <strong>${labels[detection.type]}</strong>
       <p>${Math.round(detection.confidence * 100)}% confidence · ${detection.priority} priority</p>
       <b>${detection.status}</b>
@@ -105,7 +120,7 @@ function renderIssueList(items) {
         <article class="issue-row">
           <i style="--issue-color: ${colors[item.type]}"></i>
           <div>
-            <span>${item.id} · ${item.district}</span>
+            <span>${escapeHtml(item.id)} · ${escapeHtml(item.district)}</span>
             <strong>${labels[item.type]}</strong>
           </div>
           <div class="issue-meta">
@@ -129,6 +144,35 @@ function render() {
     `${visible.length} issue${visible.length === 1 ? "" : "s"}`;
 }
 
+function resetFilters() {
+  Object.keys(filters).forEach((key) => {
+    filters[key] = "all";
+    document.querySelector(`#${key}-filter`).value = "all";
+  });
+}
+
+function showImportStatus(message, state) {
+  const status = document.querySelector("#import-status");
+  status.textContent = message;
+  status.dataset.state = state;
+}
+
+async function importDetections(file) {
+  try {
+    const parsed = JSON.parse(await file.text());
+    detections = [...validateDetectionImport(parsed)];
+    populateDistricts();
+    resetFilters();
+    render();
+    showImportStatus(
+      `${detections.length} privacy-safe detections loaded from ${file.name}.`,
+      "success",
+    );
+  } catch (error) {
+    showImportStatus(error.message, "error");
+  }
+}
+
 function bindControls() {
   ["district", "type", "priority", "status"].forEach((key) => {
     document.querySelector(`#${key}-filter`).addEventListener("change", (event) => {
@@ -138,11 +182,14 @@ function bindControls() {
   });
 
   document.querySelector("#reset-filters").addEventListener("click", () => {
-    Object.keys(filters).forEach((key) => {
-      filters[key] = "all";
-      document.querySelector(`#${key}-filter`).value = "all";
-    });
+    resetFilters();
     render();
+  });
+
+  document.querySelector("#detection-import").addEventListener("change", (event) => {
+    const [file] = event.target.files;
+    if (file) importDetections(file);
+    event.target.value = "";
   });
 }
 

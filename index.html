@@ -120,6 +120,26 @@
               </label>
             </div>
 
+            <div class="import-panel">
+              <p class="eyebrow">AI integration</p>
+              <strong>Load detection results</strong>
+              <p>
+                Import Person 1’s minimal JSON output. Personal or unexpected
+                fields are rejected before entering the dashboard.
+              </p>
+              <label class="import-button" for="detection-import">
+                Import detection JSON
+              </label>
+              <input
+                id="detection-import"
+                type="file"
+                accept="application/json,.json"
+              />
+              <div id="import-status" class="import-status" role="status">
+                Using the built-in demonstration dataset.
+              </div>
+            </div>
+
             <div class="privacy-card">
               <div class="privacy-icon" aria-hidden="true">P</div>
               <div>
