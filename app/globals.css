@@ -877,9 +877,12 @@ button, select, input { font: inherit; }
 .stat-card {
   background: var(--cream);
   padding: 16px 20px;
+  cursor: pointer;
+  transition: background .3s ease;
 }
 .stat-card .eyebrow {
   margin: 0 0 4px;
+  transition: color .3s ease;
 }
 .stat-card strong {
   display: block;
@@ -888,21 +891,29 @@ button, select, input { font: inherit; }
   color: var(--text);
   line-height: 1.1;
   margin: 2px 0 4px;
+  transition: color .3s ease;
 }
 .stat-card span {
   display: block;
   font-size: 11px;
   color: var(--teal);
+  transition: color .3s ease;
 }
+
+/* Hover — turns dark teal like the primary card */
+.stat-card:hover,
 .stat-card--primary {
   background: var(--brand);
 }
+.stat-card:hover .eyebrow,
 .stat-card--primary .eyebrow {
   color: rgba(255, 255, 255, .6);
 }
+.stat-card:hover strong,
 .stat-card--primary strong {
   color: #ffffff;
 }
+.stat-card:hover span,
 .stat-card--primary span {
   color: rgba(255, 255, 255, .7);
 }

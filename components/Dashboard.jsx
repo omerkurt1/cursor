@@ -1249,23 +1249,6 @@ export default function Dashboard() {
               <b id="deletion-check-label">Pending</b>
             </article>
           </div>
-
-          <div className="pipeline-evidence">
-            <div className="section-row">
-              <div>
-                <p className="eyebrow">Live pipeline evidence</p>
-                <h2 id="evidence-mode" style={{ fontSize: "18px", margin: 0 }}>Not connected</h2>
-              </div>
-              <span id="evidence-guardrail" className="count-pill">Awaiting proof</span>
-            </div>
-            <div className="evidence-grid">
-              <article><span>Image source</span><strong id="evidence-source">—</strong></article>
-              <article><span>Processed frames</span><strong id="evidence-frames">—</strong></article>
-              <article><span>Faces blurred</span><strong id="evidence-faces">—</strong></article>
-              <article><span>Plates blurred</span><strong id="evidence-plates">—</strong></article>
-              <article><span>Detections after dedupe</span><strong id="evidence-detections">—</strong></article>
-            </div>
-          </div>
         </div>
       </section>
 
