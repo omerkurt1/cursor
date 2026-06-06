@@ -1,0 +1,16 @@
+---
+description: AI privacy pipeline rules for hackathon work
+globs:
+  - "ai-pipeline/**"
+alwaysApply: false
+---
+
+# AI Privacy Pipeline Rules
+
+- Never commit raw videos, extracted frames, faces, license plates, or unblurred screenshots.
+- Run anonymization before urban-object detection.
+- Detection output must contain only object type, latitude, longitude, confidence, and timestamp.
+- Do not add identity recognition, profiling, person tracking, vehicle tracking, or license plate OCR.
+- Keep model artifacts and raw media outside Git history.
+- Document raw-data deletion with `scripts/delete_raw_data.py` before final delivery.
+

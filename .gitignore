@@ -1,0 +1,24 @@
+# Raw or personally identifying media must never be committed.
+data/raw/
+data/frames/
+data/input/
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# Generated outputs
+ai-pipeline/output/
+ai-pipeline/reports/
+
+# Local Python/dev artifacts
+.venv/
+__pycache__/
+*.pyc
+.env
+
+# Model weights can be large and may have license constraints.
+models/
+*.pt
+*.onnx
+
