@@ -29,13 +29,24 @@ def load_cascade(filename: str):
     return cascade
 
 
-def anonymize_video(input_path: Path, output_path: Path) -> dict:
+def require_anonymizers():
     face_cascade = load_cascade("haarcascade_frontalface_default.xml")
     plate_cascades = [
         load_cascade("haarcascade_russian_plate_number.xml"),
         load_cascade("haarcascade_license_plate_rus_16stages.xml"),
     ]
     plate_cascades = [cascade for cascade in plate_cascades if cascade is not None]
+
+    if face_cascade is None:
+        raise RuntimeError("Required face anonymizer is unavailable.")
+    if not plate_cascades:
+        raise RuntimeError("Required plate anonymizer is unavailable.")
+
+    return face_cascade, plate_cascades
+
+
+def anonymize_video(input_path: Path, output_path: Path) -> dict:
+    face_cascade, plate_cascades = require_anonymizers()
 
     capture = cv2.VideoCapture(str(input_path))
     if not capture.isOpened():
@@ -65,16 +76,15 @@ def anonymize_video(input_path: Path, output_path: Path) -> dict:
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        if face_cascade is not None:
-            faces = face_cascade.detectMultiScale(
-                gray,
-                scaleFactor=1.1,
-                minNeighbors=5,
-                minSize=(24, 24),
-            )
-            for x, y, w, h in faces:
-                blur_region(frame, x, y, w, h)
-                face_count += 1
+        faces = face_cascade.detectMultiScale(
+            gray,
+            scaleFactor=1.1,
+            minNeighbors=5,
+            minSize=(24, 24),
+        )
+        for x, y, w, h in faces:
+            blur_region(frame, x, y, w, h)
+            face_count += 1
 
         for plate_cascade in plate_cascades:
             plates = plate_cascade.detectMultiScale(

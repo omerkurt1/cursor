@@ -29,6 +29,15 @@ Gercek YOLO tespiti icin ek paket:
 pip install -r requirements-yolo.txt
 ```
 
+Mahremiyet kapisi testleri:
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+Pipeline, yuz veya plaka anonimlestiricisi yuklenemezse tespit adimina
+gecmeden hata vererek durur.
+
 `ultralytics` ilk calismada model agirligi indirmeye calisabilir. Internet yoksa `models/` klasorune daha once indirilmis bir `.pt` dosyasi koyup `--model` ile verin.
 
 Bu ortamda `python` komutunda `pip` yoksa, kullandiginiz Python executable yolunu acikca vererek calistirin:
