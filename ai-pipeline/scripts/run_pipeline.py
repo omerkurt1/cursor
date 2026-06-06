@@ -18,6 +18,7 @@ def main() -> None:
     parser.add_argument("--model", default="yolov8n.pt")
     parser.add_argument("--confidence", default=0.35, type=float)
     parser.add_argument("--frame-stride", default=5, type=int)
+    parser.add_argument("--demo-fallback", action="store_true")
     parser.add_argument("--output-dir", default=Path("output"), type=Path)
     args = parser.parse_args()
 
@@ -37,6 +38,7 @@ def main() -> None:
         longitude=args.lng,
         confidence_threshold=args.confidence,
         frame_stride=max(1, args.frame_stride),
+        demo_fallback=args.demo_fallback,
     )
     print(f"Ham detection sayisi: {len(detections)}")
 
@@ -48,4 +50,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -29,6 +29,18 @@ def load_model(model_path: str):
     return YOLO(model_path)
 
 
+def demo_detection(latitude: float, longitude: float) -> list[dict]:
+    return [
+        {
+            "type": "traffic_sign",
+            "latitude": latitude,
+            "longitude": longitude,
+            "confidence": 0.91,
+            "timestamp": "00:00:03",
+        }
+    ]
+
+
 def detect_objects(
     video_path: Path,
     output_path: Path,
@@ -37,8 +49,18 @@ def detect_objects(
     longitude: float,
     confidence_threshold: float,
     frame_stride: int,
+    demo_fallback: bool = False,
 ) -> list[dict]:
-    model = load_model(model_path)
+    try:
+        model = load_model(model_path)
+    except Exception:
+        if not demo_fallback:
+            raise
+        detections = demo_detection(latitude, longitude)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(detections, indent=2), encoding="utf-8")
+        return detections
+
     capture = cv2.VideoCapture(str(video_path))
     if not capture.isOpened():
         raise FileNotFoundError(f"Video acilamadi: {video_path}")
@@ -94,6 +116,11 @@ def main() -> None:
     parser.add_argument("--lng", required=True, type=float)
     parser.add_argument("--confidence", default=0.35, type=float)
     parser.add_argument("--frame-stride", default=5, type=int)
+    parser.add_argument(
+        "--demo-fallback",
+        action="store_true",
+        help="YOLO kurulamazsa entegrasyon demosu icin acikca isaretlenmis ornek JSON uretir.",
+    )
     args = parser.parse_args()
 
     detections = detect_objects(
@@ -104,10 +131,10 @@ def main() -> None:
         longitude=args.lng,
         confidence_threshold=args.confidence,
         frame_stride=max(1, args.frame_stride),
+        demo_fallback=args.demo_fallback,
     )
     print(f"{len(detections)} detection yazildi: {args.output}")
 
 
 if __name__ == "__main__":
     main()
-

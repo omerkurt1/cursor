@@ -23,7 +23,19 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+Gercek YOLO tespiti icin ek paket:
+
+```powershell
+pip install -r requirements-yolo.txt
+```
+
 `ultralytics` ilk calismada model agirligi indirmeye calisabilir. Internet yoksa `models/` klasorune daha once indirilmis bir `.pt` dosyasi koyup `--model` ile verin.
+
+Bu ortamda `python` komutunda `pip` yoksa, kullandiginiz Python executable yolunu acikca vererek calistirin:
+
+```powershell
+& '<python.exe yolu>' scripts\run_pipeline.py --input data\input\demo.mp4 --lat 41.021 --lng 28.874 --demo-fallback
+```
 
 ## Hizli Demo
 
@@ -39,6 +51,12 @@ Ardindan:
 python scripts\run_pipeline.py --input data\input\demo.mp4 --lat 41.021 --lng 28.874
 ```
 
+YOLO kurulumu hackathon aninda zaman alirsa, sadece entegrasyon ve JSON formati gostermek icin:
+
+```powershell
+python scripts\run_pipeline.py --input data\input\demo.mp4 --lat 41.021 --lng 28.874 --demo-fallback
+```
+
 Uretilecek dosyalar:
 
 ```text
@@ -51,6 +69,8 @@ reports/deletion_report.json
 ## Sunumda Soylenecek Kritik Cumle
 
 Model ham goruntu uzerinde degil, once anonimlestirilmis frame/video uzerinde calisir. JSON ciktisi sadece kentsel obje tipi, koordinat, guven skoru ve zaman bilgisini icerir.
+
+`--demo-fallback` gercek model ciktisi degildir; sadece backend ve harita entegrasyonunu model kurulmadan gostermek icindir.
 
 ## Beklenen JSON
 
@@ -65,4 +85,3 @@ Model ham goruntu uzerinde degil, once anonimlestirilmis frame/video uzerinde ca
   }
 ]
 ```
-
