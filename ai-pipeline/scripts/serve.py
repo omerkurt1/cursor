@@ -167,14 +167,17 @@ def main() -> None:
     parser.add_argument("--debug", action="store_true")
     args = parser.parse_args()
 
-    print(f"Sunucu baslatiliyor: http://{args.host}:{args.port}")
+    # Render.com ve diger PaaS'lar PORT env var'i enjekte eder; o zaman onu kullan.
+    port = int(os.environ.get("PORT", args.port))
+
+    print(f"Sunucu baslatiliyor: http://{args.host}:{port}")
     print(f"  GET  /health")
     print(f"  GET  /api/detections")
     print(f"  GET  /api/pipeline-report")
     print(f"  GET  /api/deletion-report")
     print(f"  GET  /api/scan/status")
     print(f"  POST /api/scan  <- Go backend buraya istek atar")
-    app.run(host=args.host, port=args.port, debug=args.debug)
+    app.run(host=args.host, port=port, debug=args.debug)
 
 
 if __name__ == "__main__":

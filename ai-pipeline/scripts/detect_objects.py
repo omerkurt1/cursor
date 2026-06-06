@@ -7,10 +7,20 @@ from pathlib import Path
 import cv2
 
 
-COCO_TO_CITY_TYPE = {
+# COCO sinif adi -> kentsel obje tipi
+# Yalnizca kamusal altyapi ile ilgili siniflar dahil edilir.
+# Kimlik tespitine yol acabilecek siniflar (person, car, bicycle vb.) kasitli olarak cikarilmistir.
+COCO_TO_CITY_TYPE: dict[str, str] = {
     "stop sign": "traffic_sign",
     "traffic light": "traffic_light",
+    "parking meter": "traffic_sign",
+    "bench": "traffic_sign",        # kentsel mobilya - oturma birimi
+    "fire hydrant": "traffic_sign", # altyapi nesnesi
 }
+
+# Bu esik altindaki guven skoru ile tespit edilen trafik isareti/isigi
+# hasarli olabilecegi seklinde isaretlenir.
+DAMAGED_SIGN_CONFIDENCE_THRESHOLD = 0.45
 
 
 def format_timestamp(seconds: float) -> str:
@@ -89,6 +99,15 @@ def detect_objects(
                 continue
 
             confidence = float(box.conf[0])
+
+            # Hasarli isaretci heuristigi: trafik isareti/isigi dusuk guvenle
+            # tespit edildiyse, muhtemelen hasarli veya kismi gorunur demektir.
+            if (
+                city_type in ("traffic_sign", "traffic_light")
+                and confidence < DAMAGED_SIGN_CONFIDENCE_THRESHOLD
+            ):
+                city_type = "damaged_sign"
+
             detections.append(
                 {
                     "type": city_type,

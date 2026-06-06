@@ -1,0 +1,25 @@
+# Tum metin dosyalari LF ile normalize edilir (CRLF uyarisini kaldirir)
+* text=auto eol=lf
+
+# Python, JSON, YAML, Markdown, CSV - Unix satir sonu
+*.py    text eol=lf
+*.json  text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+*.md    text eol=lf
+*.txt   text eol=lf
+*.csv   text eol=lf
+*.mdc   text eol=lf
+*.env   text eol=lf
+
+# PowerShell scriptleri Windows'ta CRLF ister
+*.ps1   text eol=crlf
+
+# Binary - diff/merge devre disi
+*.mp4   binary
+*.mov   binary
+*.avi   binary
+*.mkv   binary
+*.pt    binary
+*.onnx  binary
+*.pyc   binary
