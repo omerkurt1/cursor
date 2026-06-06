@@ -72,6 +72,7 @@ def validate_pipeline_report_file(path: Path) -> dict:
     guardrails = report["privacy_guardrails"]
     require(isinstance(guardrails, dict), "privacy_guardrails obje olmali")
     require(guardrails.get("runs_detection_after_anonymization") is True, "Detection anonimlestirme sonrasi calismali")
+    require(guardrails.get("anonymization_succeeded") is True, "Fail-closed: anonymization_succeeded True olmali")
     require(guardrails.get("stores_raw_frames") is False, "Pipeline raw frame saklamamali")
     require(guardrails.get("json_contains_identity_data") is False, "JSON kimlik verisi icermemeli")
     require(isinstance(report["raw_detection_count"], int), "raw_detection_count integer olmali")
