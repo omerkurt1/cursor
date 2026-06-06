@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Privacy-safe city intelligence dashboard for municipal operations."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><circle cx=%2232%22 cy=%2232%22 r=%2232%22 fill=%22%23004b46%22/><path d=%22M18 43V30h7v13m7 0V18h7v25m7 0V25h7v18%22 stroke=%22%23fffaf0%22 stroke-width=%225%22/></svg>"
+    />
+    <title>UrbanPulse | City Intelligence</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="UrbanPulse home">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          <span>
+            <strong>UrbanPulse</strong>
+            <small>City Intelligence Network</small>
+          </span>
+        </a>
+        <div class="topbar-status">
+          <span class="live-dot"></span>
+          <span>Live municipal overview</span>
+          <strong>06 JUN 2026 · 10:30</strong>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div>
+            <p class="eyebrow">City operations / Situation room</p>
+            <h1>See the city.<br /><em>Act sooner.</em></h1>
+            <p class="hero-copy">
+              Existing service vehicles become privacy-safe street sensors,
+              turning daily routes into actionable maintenance intelligence.
+            </p>
+          </div>
+          <div class="hero-callout">
+            <span>Today’s signal</span>
+            <strong id="signal-count">0</strong>
+            <p>actionable issues mapped across active districts</p>
+          </div>
+        </section>
+
+        <section class="kpi-grid" aria-label="City statistics">
+          <article class="kpi-card kpi-total">
+            <span>Mapped issues</span>
+            <strong id="stat-total">0</strong>
+            <small>All detected urban objects</small>
+          </article>
+          <article class="kpi-card">
+            <span>Urgent attention</span>
+            <strong id="stat-urgent">0</strong>
+            <small>High-priority field actions</small>
+          </article>
+          <article class="kpi-card">
+            <span>Resolved</span>
+            <strong id="stat-resolved">0</strong>
+            <small>Closed by municipal teams</small>
+          </article>
+          <article class="kpi-card">
+            <span>District coverage</span>
+            <strong id="stat-districts">0</strong>
+            <small>Districts represented today</small>
+          </article>
+        </section>
+
+        <section class="workspace">
+          <aside class="control-panel">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Control panel</p>
+                <h2>Focus the signal</h2>
+              </div>
+              <button id="reset-filters" class="text-button" type="button">
+                Reset
+              </button>
+            </div>
+
+            <div class="filters">
+              <label>
+                District
+                <select id="district-filter"></select>
+              </label>
+              <label>
+                Issue type
+                <select id="type-filter">
+                  <option value="all">All issue types</option>
+                  <option value="road_damage">Road damage</option>
+                  <option value="damaged_sign">Damaged sign</option>
+                  <option value="overflowing_container">
+                    Overflowing container
+                  </option>
+                </select>
+              </label>
+              <label>
+                Priority
+                <select id="priority-filter">
+                  <option value="all">All priorities</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </label>
+              <label>
+                Status
+                <select id="status-filter">
+                  <option value="all">All statuses</option>
+                  <option value="new">New</option>
+                  <option value="assigned">Assigned</option>
+                  <option value="resolved">Resolved</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="privacy-card">
+              <div class="privacy-icon" aria-hidden="true">P</div>
+              <div>
+                <strong>Privacy before intelligence</strong>
+                <p>
+                  Faces and license plates are irreversibly blurred before
+                  urban-object detection begins.
+                </p>
+              </div>
+            </div>
+          </aside>
+
+          <div class="map-panel">
+            <div class="map-toolbar">
+              <div>
+                <span class="live-dot"></span>
+                <strong id="visible-count">0 signals visible</strong>
+              </div>
+              <div class="map-legend" aria-label="Map legend">
+                <span><i class="dot road"></i> Road</span>
+                <span><i class="dot sign"></i> Sign</span>
+                <span><i class="dot waste"></i> Waste</span>
+              </div>
+            </div>
+            <div id="map" aria-label="City issue map"></div>
+          </div>
+        </section>
+
+        <section class="lower-grid">
+          <div class="issue-panel">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Field queue</p>
+                <h2>Latest detections</h2>
+              </div>
+              <span id="queue-count" class="count-pill">0 issues</span>
+            </div>
+            <div id="issue-list" class="issue-list"></div>
+          </div>
+
+          <aside class="pipeline-panel">
+            <p class="eyebrow">Privacy-by-design</p>
+            <h2>Useful data.<br />Nothing personal.</h2>
+            <ol class="pipeline">
+              <li>
+                <span>01</span>
+                <div>
+                  <strong>Capture locally</strong>
+                  <p>Service vehicles observe city assets during normal routes.</p>
+                </div>
+              </li>
+              <li>
+                <span>02</span>
+                <div>
+                  <strong>Anonymize first</strong>
+                  <p>Faces and plates are blurred before object analysis.</p>
+                </div>
+              </li>
+              <li>
+                <span>03</span>
+                <div>
+                  <strong>Keep only signals</strong>
+                  <p>Only issue type, location, confidence, and time remain.</p>
+                </div>
+              </li>
+              <li>
+                <span>04</span>
+                <div>
+                  <strong>Delete raw footage</strong>
+                  <p>Source images are removed and deletion is documented.</p>
+                </div>
+              </li>
+            </ol>
+          </aside>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
