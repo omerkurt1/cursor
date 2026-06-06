@@ -1,0 +1,181 @@
+{
+  "name": "city-backend API contract",
+  "version": "0.1.0",
+  "description": "Go backend REST + WebSocket API. Next.js frontend bu dosyayi referans alarak entegre olur.",
+  "baseUrl": {
+    "production": "https://cursor-j7jx.onrender.com",
+    "local": "http://localhost:8080"
+  },
+  "websocketUrl": {
+    "production": "wss://cursor-j7jx.onrender.com/ws",
+    "local": "ws://localhost:8080/ws"
+  },
+  "notes": [
+    "Render free plan: 15 dk inaktiviteden sonra servis uyur, ilk istek ~50sn gecikebilir.",
+    "source alani 'real' (gercek tarama) ya da 'sample' (demo verisi) olabilir.",
+    "Tum hatalar { error, code } formatinda doner."
+  ],
+  "endpoints": [
+    {
+      "id": "health",
+      "method": "GET",
+      "path": "/health",
+      "description": "Servis ve pipeline baglanti durumu. Her zaman 200 doner.",
+      "exampleResponse": {
+        "status": "ok",
+        "version": "0.1.0",
+        "time": "2026-06-06T10:35:17Z",
+        "pipeline_status": "ok"
+      }
+    },
+    {
+      "id": "getDetections",
+      "method": "GET",
+      "path": "/api/v1/detections",
+      "description": "Filtreli, sayfalanabilir tespit listesi. Harita pinleri icin kullan.",
+      "queryParams": {
+        "type": {
+          "type": "string",
+          "required": false,
+          "enum": ["traffic_sign", "traffic_light", "pothole", "damaged_sign"],
+          "example": "traffic_sign"
+        },
+        "min_confidence": {
+          "type": "number",
+          "required": false,
+          "range": "0..1",
+          "example": 0.7
+        },
+        "bbox": {
+          "type": "string",
+          "required": false,
+          "format": "minLat,minLng,maxLat,maxLng",
+          "example": "41.0,28.8,41.1,29.0"
+        },
+        "limit": {
+          "type": "integer",
+          "required": false,
+          "default": 50,
+          "max": 200,
+          "example": 50
+        },
+        "offset": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "example": 0
+        }
+      },
+      "exampleResponse": {
+        "data": [
+          {
+            "type": "traffic_sign",
+            "latitude": 41.021,
+            "longitude": 28.874,
+            "confidence": 0.91,
+            "timestamp": "00:00:03"
+          }
+        ],
+        "total": 5,
+        "source": "sample",
+        "cached_at": "2026-06-06T10:35:33Z"
+      }
+    },
+    {
+      "id": "getStats",
+      "method": "GET",
+      "path": "/api/v1/detections/stats",
+      "description": "Tip dagilimi, toplam ve ortalama guven skoru. Dashboard icin kullan.",
+      "exampleResponse": {
+        "total": 5,
+        "by_type": {
+          "traffic_sign": 2,
+          "traffic_light": 1,
+          "pothole": 1,
+          "damaged_sign": 1
+        },
+        "avg_confidence": 0.8,
+        "source": "sample"
+      }
+    },
+    {
+      "id": "postScan",
+      "method": "POST",
+      "path": "/api/v1/scan",
+      "description": "Yeni tarama baslatir, 202 doner. Ilerleme WebSocket uzerinden yayinlanir. Zaten tarama varsa 409 doner.",
+      "requestBody": {
+        "lat": { "type": "number", "required": true, "example": 41.021 },
+        "lng": { "type": "number", "required": true, "example": 28.874 },
+        "waypoints": {
+          "type": "array",
+          "required": false,
+          "items": { "lat": "number", "lng": "number" },
+          "description": "Rota taramasi icin coklu nokta"
+        },
+        "demo_fallback": { "type": "boolean", "required": false, "default": false },
+        "demo_no_api": { "type": "boolean", "required": false, "default": false }
+      },
+      "exampleRequest": {
+        "lat": 41.021,
+        "lng": 28.874
+      },
+      "responses": {
+        "202": { "description": "Tarama basladi, WS'i dinle" },
+        "409": { "error": "Scan zaten calisiyor", "code": "SCAN_IN_PROGRESS" },
+        "502": { "error": "pipeline unreachable", "code": "PIPELINE_UNAVAILABLE" }
+      }
+    },
+    {
+      "id": "getScanStatus",
+      "method": "GET",
+      "path": "/api/v1/scan/status",
+      "description": "Aktif tarama durumu.",
+      "exampleResponse": {
+        "running": false,
+        "completed": true
+      }
+    }
+  ],
+  "websocket": {
+    "path": "/ws",
+    "description": "Baglandiktan sonra tarama yasam dongusu olaylarini push eder.",
+    "events": [
+      {
+        "event": "scan_started",
+        "payload": { "lat": 41.021, "lng": 28.874 }
+      },
+      {
+        "event": "scan_progress",
+        "payload": { "status": "running" }
+      },
+      {
+        "event": "scan_completed",
+        "payload": { "detection_count": 5, "source": "real" }
+      },
+      {
+        "event": "scan_failed",
+        "payload": { "error": "..." }
+      }
+    ]
+  },
+  "models": {
+    "Detection": {
+      "type": "string (traffic_sign | traffic_light | pothole | damaged_sign)",
+      "latitude": "number",
+      "longitude": "number",
+      "confidence": "number (0..1)",
+      "timestamp": "string (HH:MM:SS)"
+    },
+    "Error": {
+      "error": "string",
+      "code": "string"
+    }
+  },
+  "errorCodes": {
+    "BAD_REQUEST": 400,
+    "PIPELINE_UNAVAILABLE": 502,
+    "SCAN_IN_PROGRESS": 409,
+    "RATE_LIMITED": 429,
+    "INTERNAL_ERROR": 500
+  }
+}
