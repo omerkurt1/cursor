@@ -13,6 +13,7 @@ from flask_cors import CORS
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = PROJECT_ROOT / "output"
 REPORT_DIR = PROJECT_ROOT / "reports"
+EXAMPLES_DIR = PROJECT_ROOT / "examples"
 PYTHON = sys.executable
 
 # Scan durumu - thread-safe erişim için _scan_lock ile korunur
@@ -20,14 +21,33 @@ _scan_lock = threading.Lock()
 _scan_status: dict = {"running": False, "last_result": None}
 
 
-def load_json_file(path: Path) -> tuple[dict | list, int]:
+def load_json_file(path: Path, fallback: Path | None = None) -> tuple[dict | list, int, dict]:
+    """JSON dosyasini okur. Bulunamazsa fallback'e bakar; o da yoksa 404 doner.
+
+    Returns:
+        (data, http_status, extra_headers)
+    """
     if not path.exists():
-        return {"error": f"Dosya henuz uretilmedi: {path.name}. Once pipeline'i calistirin."}, 404
+        if fallback and fallback.exists():
+            try:
+                data = json.loads(fallback.read_text(encoding="utf-8"))
+                headers = {
+                    "X-Data-Source": "sample",
+                    "X-Data-Note": "Real scan not yet run. POST /api/scan to trigger.",
+                }
+                return data, 200, headers
+            except json.JSONDecodeError:
+                pass
+        return (
+            {"error": f"Dosya henuz uretilmedi: {path.name}. POST /api/scan ile tarama baslatin."},
+            404,
+            {},
+        )
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-        return data, 200
+        return data, 200, {"X-Data-Source": "real"}
     except json.JSONDecodeError as exc:
-        return {"error": f"JSON okunamadi: {exc}"}, 500
+        return {"error": f"JSON okunamadi: {exc}"}, 500, {}
 
 
 app = Flask(__name__)
@@ -49,20 +69,35 @@ def health() -> Response:
 
 @app.get("/api/detections")
 def detections() -> Response:
-    data, status = load_json_file(OUTPUT_DIR / "detections.json")
-    return jsonify(data), status
+    data, status, headers = load_json_file(
+        OUTPUT_DIR / "detections.json",
+        fallback=EXAMPLES_DIR / "detections.sample.json",
+    )
+    resp = jsonify(data)
+    resp.status_code = status
+    for k, v in headers.items():
+        resp.headers[k] = v
+    return resp
 
 
 @app.get("/api/pipeline-report")
 def pipeline_report() -> Response:
-    data, status = load_json_file(REPORT_DIR / "pipeline_report.json")
-    return jsonify(data), status
+    data, status, headers = load_json_file(REPORT_DIR / "pipeline_report.json")
+    resp = jsonify(data)
+    resp.status_code = status
+    for k, v in headers.items():
+        resp.headers[k] = v
+    return resp
 
 
 @app.get("/api/deletion-report")
 def deletion_report() -> Response:
-    data, status = load_json_file(REPORT_DIR / "deletion_report.json")
-    return jsonify(data), status
+    data, status, headers = load_json_file(REPORT_DIR / "deletion_report.json")
+    resp = jsonify(data)
+    resp.status_code = status
+    for k, v in headers.items():
+        resp.headers[k] = v
+    return resp
 
 
 @app.get("/api/scan/status")

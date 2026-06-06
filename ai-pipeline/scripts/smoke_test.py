@@ -62,11 +62,12 @@ def test_serve_endpoints(detections_json: Path, pipeline_report_json: Path) -> N
         assert data["service"] == "ai-privacy-pipeline"
         print("  [OK] GET /health")
 
-        # /api/detections
+        # /api/detections - gercek veri veya fallback sample
         resp = urllib.request.urlopen(f"{base}/api/detections")
         detections = json.loads(resp.read())
         assert isinstance(detections, list), "detections liste olmali"
-        print(f"  [OK] GET /api/detections ({len(detections)} kayit)")
+        data_source = resp.headers.get("X-Data-Source", "unknown")
+        print(f"  [OK] GET /api/detections ({len(detections)} kayit, kaynak={data_source})")
 
         # /api/pipeline-report
         resp = urllib.request.urlopen(f"{base}/api/pipeline-report")
@@ -79,6 +80,10 @@ def test_serve_endpoints(detections_json: Path, pipeline_report_json: Path) -> N
         status = json.loads(resp.read())
         assert "running" in status
         print("  [OK] GET /api/scan/status")
+
+        # X-Data-Source header kontrolu: real veya sample olmali
+        assert data_source in ("real", "sample"), f"X-Data-Source gecersiz: {data_source}"
+        print(f"  [OK] X-Data-Source header gecerli: {data_source}")
 
         # POST /api/scan - 409 beklenmez, 202 beklenir
         scan_body = json.dumps({"lat": 41.021, "lng": 28.874, "demo_fallback": True, "demo_no_api": True}).encode()

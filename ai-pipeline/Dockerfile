@@ -23,10 +23,14 @@ RUN mkdir -p output reports data/input data/routes
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app/scripts
+# PORT, Render.com tarafindan otomatik set edilir; varsayilan 8000
+ENV PORT=8000
 
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT}/health')"
 
-CMD ["python", "scripts/serve.py", "--host", "0.0.0.0", "--port", "8000"]
+# Gunicorn production WSGI sunucusu kullanilir.
+# $PORT Render.com tarafindan inject edilir.
+CMD gunicorn --bind "0.0.0.0:${PORT}" --workers 2 --timeout 120 "scripts.serve:app"
