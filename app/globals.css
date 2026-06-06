@@ -25,7 +25,7 @@
   --shadow-lg:   0 16px 40px rgba(20, 40, 38, .14);
   --shadow-sm:   0 8px 24px rgba(20, 40, 38, .08);
   --radius:      14px;
-  --sidebar-w:   280px;
+  --sidebar-w:   340px;
   --topbar-h:    60px;
 }
 
@@ -124,7 +124,7 @@ button, select, input { font: inherit; }
 /* ?? Dashboard layout ??????????????????????????????????????????????? */
 .dashboard-layout {
   display: flex;
-  height: 420px;
+  height: 520px;
   overflow: hidden;
 }
 
@@ -543,32 +543,32 @@ button, select, input { font: inherit; }
 
 .issue-panel-header {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 16px 8px;
+  padding: 12px 20px 10px;
   border-bottom: 1px solid var(--line);
   position: sticky; top: 0; z-index: 10;
   background: var(--cream);
 }
-.issue-panel-header strong { font-size: 12px; }
+.issue-panel-header strong { font-size: 15px; }
 
 .sort-controls { display: flex; gap: 4px; margin-left: auto; }
 .sort-btn {
-  padding: 4px 10px; background: var(--surface-2);
+  padding: 5px 12px; background: var(--surface-2);
   border: 1px solid var(--line); border-radius: 20px; cursor: pointer;
-  color: var(--text-dim); font-size: 9px; font-weight: 700;
+  color: var(--text-dim); font-size: 11px; font-weight: 700;
   letter-spacing: .06em; text-transform: uppercase;
   transition: color .2s, border-color .2s;
 }
 .sort-btn.active, .sort-btn:hover { color: var(--teal); border-color: var(--teal); }
 
 .count-pill {
-  padding: 4px 9px; border-radius: 20px;
+  padding: 5px 11px; border-radius: 20px;
   background: var(--teal-dim); color: var(--brand);
-  font-size: 9px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
 }
 
 .issue-row {
   width: 100%; display: grid; grid-template-columns: 8px 1fr auto;
-  align-items: center; gap: 12px; padding: 10px 16px;
+  align-items: center; gap: 14px; padding: 12px 20px;
   border-bottom: 1px solid var(--line);
   border-top: 0; border-left: 0; border-right: 0;
   background: transparent; cursor: pointer; color: var(--text); text-align: left;
@@ -589,15 +589,15 @@ button, select, input { font: inherit; }
 
 .issue-row span, .issue-row strong, .issue-row small { display: block; }
 .issue-row div > span {
-  color: var(--text-dim); font-size: 8px; font-weight: 700;
+  color: var(--text-dim); font-size: 10px; font-weight: 700;
   letter-spacing: .1em; text-transform: uppercase;
 }
-.issue-row strong { margin-top: 2px; font-size: 12px; }
+.issue-row strong { margin-top: 2px; font-size: 14px; }
 
 .issue-meta { text-align: right; }
-.issue-meta small { margin-top: 4px; color: var(--muted); font-size: 8px; text-transform: capitalize; }
+.issue-meta small { margin-top: 4px; color: var(--muted); font-size: 10px; text-transform: capitalize; }
 
-.priority { font-size: 8px; font-weight: 700; text-transform: uppercase; }
+.priority { font-size: 11px; font-weight: 700; text-transform: uppercase; }
 .priority.high   { color: var(--danger); }
 .priority.medium { color: var(--amber); }
 .priority.low    { color: var(--teal); }
@@ -629,38 +629,38 @@ button, select, input { font: inherit; }
 
 /* ?? Detail panel ??????????????????????????????????????????????????? */
 .detail-panel {
-  margin: 0; padding: 22px 28px;
+  margin: 0; padding: 28px 32px;
   display: grid; grid-template-columns: 1.1fr 1fr 0.8fr;
-  align-items: center; gap: 28px;
+  align-items: center; gap: 32px;
   background: var(--brand);
   color: #ffffff;
   border-top: 1px solid var(--line);
   flex-shrink: 0;
 }
 
-.detail-panel .eyebrow { color: rgba(255, 255, 255, .6); }
-.detail-panel h2 { font-family: "Syne", sans-serif; font-size: 22px; margin-top: 4px; color: #ffffff; }
-.detail-summary { max-width: 380px; margin: 7px 0 0; color: rgba(255, 255, 255, .7); font-size: 10px; line-height: 1.55; }
+.detail-panel .eyebrow { color: rgba(255, 255, 255, .6); font-size: 11px; }
+.detail-panel h2 { font-family: "Syne", sans-serif; font-size: 26px; margin-top: 4px; color: #ffffff; }
+.detail-summary { max-width: 400px; margin: 7px 0 0; color: rgba(255, 255, 255, .7); font-size: 13px; line-height: 1.55; }
 
-.detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-.detail-grid div { padding-left: 12px; border-left: 1px solid rgba(255, 255, 255, .2); }
-.detail-grid dt { color: rgba(255, 255, 255, .5); font-size: 8px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
-.detail-grid dd { margin: 5px 0 0; font-size: 12px; font-weight: 700; text-transform: capitalize; color: #ffffff; }
+.detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.detail-grid div { padding-left: 14px; border-left: 1px solid rgba(255, 255, 255, .2); }
+.detail-grid dt { color: rgba(255, 255, 255, .5); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.detail-grid dd { margin: 5px 0 0; font-size: 15px; font-weight: 700; text-transform: capitalize; color: #ffffff; }
 
 .action-note {
-  padding: 16px; border: 1px solid rgba(255, 255, 255, .15); border-radius: 10px;
+  padding: 18px; border: 1px solid rgba(255, 255, 255, .15); border-radius: 10px;
   background: rgba(255, 255, 255, .1);
   color: #ffffff;
 }
-.action-note > span { color: rgba(255, 255, 255, .5); font-size: 8px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
-.action-note strong { display: block; margin-top: 7px; color: #2ecc71; font-size: 12px; line-height: 1.4; }
+.action-note > span { color: rgba(255, 255, 255, .5); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.action-note strong { display: block; margin-top: 7px; color: #2ecc71; font-size: 14px; line-height: 1.4; }
 
 .status-actions { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
 .status-actions button {
-  padding: 7px 10px; color: rgba(255, 255, 255, .85);
+  padding: 8px 14px; color: rgba(255, 255, 255, .85);
   border: 1px solid rgba(255, 255, 255, .3); border-radius: 7px;
   background: rgba(255, 255, 255, .08); cursor: pointer;
-  font-size: 9px; font-weight: 700; letter-spacing: .04em;
+  font-size: 11px; font-weight: 700; letter-spacing: .04em;
   transition: color .2s, border-color .2s, background .2s;
 }
 .status-actions button:hover:not(:disabled) { color: #ffffff; border-color: rgba(255, 255, 255, .6); background: rgba(255, 255, 255, .15); }
@@ -682,7 +682,7 @@ button, select, input { font: inherit; }
 }
 .pipeline-panel .eyebrow { color: rgba(255, 255, 255, .6); }
 .pipeline-panel h2 {
-  font-family: "Syne", sans-serif; font-size: 22px; color: #ffffff; margin-top: 8px;
+  font-family: "Syne", sans-serif; font-size: 26px; color: #ffffff; margin-top: 8px;
 }
 .pipeline-panel h2 em { font-style: normal; color: var(--teal); }
 
@@ -691,9 +691,9 @@ button, select, input { font: inherit; }
   display: grid; grid-template-columns: 30px 1fr; gap: 12px; padding: 13px 0;
   border-top: 1px solid rgba(255, 255, 255, .15);
 }
-.pipeline li > span { color: #c0492b; font-family: Georgia, serif; font-size: 12px; font-style: italic; }
-.pipeline strong { display: block; font-size: 11px; color: #ffffff; }
-.pipeline p { margin: 3px 0 0; color: rgba(255, 255, 255, .6); font-size: 9px; line-height: 1.5; }
+.pipeline li > span { color: #c0492b; font-family: Georgia, serif; font-size: 14px; font-style: italic; }
+.pipeline strong { display: block; font-size: 14px; color: #ffffff; }
+.pipeline p { margin: 3px 0 0; color: rgba(255, 255, 255, .6); font-size: 12px; line-height: 1.5; }
 
 /* ?? Compliance console ????????????????????????????????????????????? */
 .compliance-console {
