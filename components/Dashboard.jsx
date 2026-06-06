@@ -820,6 +820,11 @@ export default function Dashboard() {
         render();
       });
 
+      // Print municipal report
+      document.querySelector("#print-report")?.addEventListener("click", () => {
+        window.print();
+      });
+
       // Deletion report
       document
         .querySelector("#deletion-report-import")
@@ -877,6 +882,9 @@ export default function Dashboard() {
           <span>Live city-wide overview</span>
         </div>
         <div className="topbar-right">
+          <button id="print-report" className="btn-report" type="button">
+            📄 Belediye Raporu
+          </button>
           <span className="connection-indicator" id="connection-indicator">
             <span className="conn-dot offline"></span>
             <span id="conn-label">API offline</span>

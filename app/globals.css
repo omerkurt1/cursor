@@ -930,3 +930,126 @@ button, select, input { font: inherit; }
 .compliance-section .compliance-console {
   max-width: 100%;
 }
+
+/* ── Report button ─────────────────────────────────────────────────── */
+.btn-report {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--brand);
+  background: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  white-space: nowrap;
+}
+.btn-report:hover {
+  background: #f0f0f0;
+  transform: translateY(-1px);
+}
+.btn-report:active {
+  transform: translateY(0);
+}
+
+/* ── Print / PDF export styles ─────────────────────────────────────── */
+@media print {
+  /* Reset page */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  @page { margin: 12mm 10mm; size: A4 landscape; }
+
+  /* Hide interactive / nav elements */
+  .topbar,
+  .sidebar,
+  .map-toolbar,
+  .route-scan-panel,
+  .import-panel,
+  .privacy-card,
+  .privacy-footer,
+  .btn-report,
+  .sort-controls,
+  .status-actions,
+  .compliance-actions,
+  .scan-progress-bar,
+  .scan-last-time,
+  .scan-mode-label,
+  #map,
+  #detection-import,
+  #pipeline-api-url,
+  #pipeline-status,
+  #import-status,
+  #deletion-report-import { display: none !important; }
+
+  body { background: #ffffff !important; }
+
+  /* Print header */
+  .hero-section {
+    background: #ffffff !important;
+    padding: 20px 0 16px !important;
+    border-bottom: 2px solid #004b46;
+    page-break-after: avoid;
+  }
+  .hero-heading { font-size: 28px !important; }
+  .hero-signal-card {
+    border: 2px solid #004b46 !important;
+    padding: 14px 20px !important;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    border: 1px solid #ddd !important;
+    page-break-after: avoid;
+  }
+  .stat-card--primary {
+    background: #004b46 !important;
+  }
+
+  /* Dashboard layout — hide map, show nothing */
+  .dashboard-layout { display: none !important; }
+
+  /* Content grid */
+  .content-grid {
+    grid-template-columns: 1fr 1fr !important;
+    page-break-before: avoid;
+  }
+  .content-grid .issue-list-panel {
+    max-height: none !important;
+    overflow: visible !important;
+    border: 1px solid #ddd !important;
+  }
+  .content-grid .pipeline-panel {
+    background: #004b46 !important;
+    color: #ffffff !important;
+  }
+
+  /* Detail panel */
+  .detail-panel {
+    background: #004b46 !important;
+    color: #ffffff !important;
+    page-break-inside: avoid;
+  }
+
+  /* Compliance */
+  .compliance-console {
+    page-break-inside: avoid;
+  }
+  .pipeline-evidence {
+    page-break-inside: avoid;
+  }
+
+  /* Issue items */
+  .issue-item { page-break-inside: avoid; }
+
+  /* Report watermark */
+  .hero-section::after {
+    content: "UrbanPulse Belediye Raporu · " attr(data-date);
+    display: block;
+    margin-top: 12px;
+    font-size: 10px;
+    color: #999;
+  }
+}
