@@ -779,6 +779,37 @@ h2 {
   line-height: 1.4;
 }
 
+.status-actions {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.status-actions button {
+  padding: 8px 10px;
+  color: var(--card);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.status-actions button:hover:not(:disabled) {
+  color: var(--teal-dark);
+  background: var(--yellow);
+}
+
+.status-actions button.active,
+.status-actions button:disabled {
+  color: rgba(255, 250, 240, 0.48);
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: default;
+}
+
 @media (max-width: 980px) {
   .hero {
     align-items: flex-start;

@@ -23,6 +23,16 @@ export function getRoutePoints(detections) {
     .map(({ latitude, longitude }) => [latitude, longitude]);
 }
 
+export function updateDetectionStatus(detections, id, status) {
+  if (!allowedStatuses.has(status)) {
+    throw new Error(`Unsupported status "${status}".`);
+  }
+
+  return detections.map((detection) =>
+    detection.id === id ? { ...detection, status } : detection,
+  );
+}
+
 const allowedFields = new Set([
   "id",
   "district",

@@ -3,6 +3,7 @@ import {
   calculateStats,
   filterDetections,
   getRoutePoints,
+  updateDetectionStatus,
   validateDetectionImport,
 } from "./dashboard.js";
 
@@ -120,5 +121,21 @@ describe("getRoutePoints", () => {
       [41.01, 29.01],
       [41.02, 29.02],
     ]);
+  });
+});
+
+describe("updateDetectionStatus", () => {
+  it("updates only the selected detection without mutating the input", () => {
+    const updated = updateDetectionStatus(detections, "DET-001", "resolved");
+
+    expect(updated[0].status).toBe("resolved");
+    expect(updated[1]).toBe(detections[1]);
+    expect(detections[0].status).toBe("new");
+  });
+
+  it("rejects unsupported municipal statuses", () => {
+    expect(() =>
+      updateDetectionStatus(detections, "DET-001", "deleted"),
+    ).toThrow(/unsupported status/i);
   });
 });

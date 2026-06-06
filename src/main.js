@@ -5,6 +5,7 @@ import {
   calculateStats,
   filterDetections,
   getRoutePoints,
+  updateDetectionStatus,
   validateDetectionImport,
 } from "./dashboard.js";
 import { detections as sampleDetections } from "./data.js";
@@ -166,6 +167,10 @@ function renderIssueDetail(items) {
     });
     document.querySelector("#detail-action").textContent =
       "Awaiting signal selection";
+    document.querySelectorAll("[data-next-status]").forEach((button) => {
+      button.disabled = true;
+      button.classList.remove("active");
+    });
     return;
   }
 
@@ -181,6 +186,13 @@ function renderIssueDetail(items) {
   ).format(new Date(selected.detectedAt));
   document.querySelector("#detail-status").textContent = selected.status;
   document.querySelector("#detail-action").textContent = actions[selected.type];
+  document.querySelectorAll("[data-next-status]").forEach((button) => {
+    button.disabled = button.dataset.nextStatus === selected.status;
+    button.classList.toggle(
+      "active",
+      button.dataset.nextStatus === selected.status,
+    );
+  });
 }
 
 function selectDetection(id) {
@@ -259,6 +271,17 @@ function bindControls() {
   document.querySelector("#issue-list").addEventListener("click", (event) => {
     const item = event.target.closest("[data-detection-id]");
     if (item) selectDetection(item.dataset.detectionId);
+  });
+
+  document.querySelector("#status-actions").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-next-status]");
+    if (!button || !selectedId) return;
+    detections = updateDetectionStatus(
+      detections,
+      selectedId,
+      button.dataset.nextStatus,
+    );
+    render();
   });
 }
 
