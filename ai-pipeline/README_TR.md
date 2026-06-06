@@ -63,6 +63,7 @@ Uretilecek dosyalar:
 output/anonymized_demo.mp4
 output/detections_raw.json
 output/detections.json
+reports/pipeline_report.json
 reports/deletion_report.json
 ```
 
@@ -85,3 +86,27 @@ Model ham goruntu uzerinde degil, once anonimlestirilmis frame/video uzerinde ca
   }
 ]
 ```
+
+## Person 2 Entegrasyonu
+
+Backend ve harita arayuzu icin sozlesme:
+
+```text
+docs/INTEGRATION_TR.md
+```
+
+Ornek veri:
+
+```text
+examples/detections.sample.json
+```
+
+## Ham Veri Silme Kaniti
+
+Pipeline sonunda ham veri silme raporu uretmek icin:
+
+```powershell
+python scripts\run_pipeline.py --input data\input\demo.mp4 --lat 41.021 --lng 28.874 --demo-fallback --delete-raw-data --raw-dir data\input
+```
+
+Silme scripti yalnizca `ai-pipeline/data` altindaki klasorleri silebilir.

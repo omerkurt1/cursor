@@ -6,11 +6,33 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DATA_ROOT = PROJECT_ROOT / "data"
+
+
+def is_relative_to(path: Path, parent: Path) -> bool:
+    try:
+        path.relative_to(parent)
+        return True
+    except ValueError:
+        return False
+
+
+def validate_raw_dir(raw_dir: Path) -> Path:
+    resolved_raw_dir = raw_dir.resolve()
+    resolved_data_root = DATA_ROOT.resolve()
+
+    if resolved_raw_dir == resolved_data_root or not is_relative_to(resolved_raw_dir, resolved_data_root):
+        raise ValueError(f"Ham veri silme yalnizca {resolved_data_root} altinda yapilabilir.")
+
+    return resolved_raw_dir
+
+
 def delete_raw_data(raw_dir: Path, report_path: Path, confirm: bool) -> dict:
     if not confirm:
         raise RuntimeError("Silme islemi icin --yes parametresi gerekli.")
 
-    raw_dir = raw_dir.resolve()
+    raw_dir = validate_raw_dir(raw_dir)
     deleted_files: list[str] = []
 
     if raw_dir.exists():
@@ -22,12 +44,13 @@ def delete_raw_data(raw_dir: Path, report_path: Path, confirm: bool) -> dict:
                 path.rmdir()
         raw_dir.rmdir()
 
+    status = "raw_data_deleted" if deleted_files else "raw_dir_not_found_or_empty"
     report = {
         "deleted_at": datetime.now(timezone.utc).isoformat(),
         "raw_dir": str(raw_dir),
         "deleted_file_count": len(deleted_files),
         "deleted_files": deleted_files,
-        "status": "raw_data_deleted",
+        "status": status,
     }
 
     report_path.parent.mkdir(parents=True, exist_ok=True)
@@ -48,4 +71,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
