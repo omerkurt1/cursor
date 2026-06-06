@@ -538,7 +538,7 @@ button, select, input { font: inherit; }
 
 /* ?? Issue list panel ??????????????????????????????????????????????? */
 .issue-list-panel {
-  background: #ffffff;
+  background: var(--cream);
   border-top: 1px solid var(--line);
   max-height: 260px;
   overflow-y: auto;
@@ -550,7 +550,7 @@ button, select, input { font: inherit; }
   padding: 10px 16px 8px;
   border-bottom: 1px solid var(--line);
   position: sticky; top: 0; z-index: 10;
-  background: #ffffff;
+  background: var(--cream);
 }
 .issue-panel-header strong { font-size: 12px; }
 
