@@ -11,6 +11,9 @@ cd ai-pipeline
 python scripts\serve.py --port 8000
 ```
 
+Guvenlik nedeniyle API varsayilan olarak yalnizca `127.0.0.1` uzerinde
+dinler. Dashboard ve pipeline ayni bilgisayarda calismalidir.
+
 ### Endpoint'ler
 
 | Metod | URL | Aciklama |

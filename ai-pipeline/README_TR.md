@@ -111,6 +111,10 @@ Pipeline ciktilarini HTTP API uzerinden sunmak icin:
 python scripts\serve.py --port 8000
 ```
 
+Sunucu varsayilan olarak yalnizca `127.0.0.1` uzerinde dinler ve sadece yerel
+dashboard originlerine CORS izni verir. Ham veya ozet veriyi ag uzerinden
+paylasmak icin `--host 0.0.0.0` kullanmayin.
+
 Endpointler:
 
 ```text

@@ -23,7 +23,14 @@ def load_json_file(path: Path) -> tuple[dict | list, int]:
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(
+    app,
+    origins=[
+        r"http://localhost:\d+",
+        r"http://127\.0\.0\.1:\d+",
+        r"http://\[::1\]:\d+",
+    ],
+)
 
 
 @app.get("/health")
@@ -53,7 +60,7 @@ def main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(description="AI pipeline ciktilarini HTTP uzerinden sunar.")
-    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", default=8000, type=int)
     parser.add_argument("--debug", action="store_true")
     args = parser.parse_args()
