@@ -6,6 +6,13 @@ from pathlib import Path
 import cv2
 
 
+class AnonymizationError(RuntimeError):
+    """Anonymization adimi basarisiz oldugunda firlatilar.
+
+    Pipeline fail-closed calisir: bu hata yakalanmadan detection ASLA baslamaz.
+    """
+
+
 def blur_region(frame, x: int, y: int, w: int, h: int) -> None:
     height, width = frame.shape[:2]
     x1 = max(0, x)
@@ -21,21 +28,76 @@ def blur_region(frame, x: int, y: int, w: int, h: int) -> None:
     frame[y1:y2, x1:x2] = blurred
 
 
-def load_cascade(filename: str):
+def _load_cascade_strict(filename: str) -> cv2.CascadeClassifier:
+    """Cascade yuklemeyi dener; basarisiz olursa AnonymizationError firlatir.
+
+    Fail-closed: cascade yoksa pipeline durur, detection baslamaz.
+    """
     cascade_path = Path(cv2.data.haarcascades) / filename
     cascade = cv2.CascadeClassifier(str(cascade_path))
     if cascade.empty():
-        return None
+        raise AnonymizationError(
+            f"Cascade yuklenemedi: {filename}. "
+            "OpenCV kurulumu eksik olabilir. "
+            "Anonimlestirme garantisi saglanamadigi icin pipeline durduruldu."
+        )
     return cascade
 
 
+def _require_at_least_one_plate_cascade(
+    candidates: list[str],
+) -> list[cv2.CascadeClassifier]:
+    """En az bir plaka cascade'i yukler; hicbiri yuklenemezse AnonymizationError firlatir."""
+    loaded: list[cv2.CascadeClassifier] = []
+    errors: list[str] = []
+    for filename in candidates:
+        cascade_path = Path(cv2.data.haarcascades) / filename
+        cascade = cv2.CascadeClassifier(str(cascade_path))
+        if cascade.empty():
+            errors.append(filename)
+        else:
+            loaded.append(cascade)
+
+    if not loaded:
+        raise AnonymizationError(
+            f"Hicbir plaka cascade yuklenemedi ({', '.join(errors)}). "
+            "Plaka anonimlestirmesi garantisi saglanamadigi icin pipeline durduruldu."
+        )
+    return loaded
+
+
+def _validate_output(output_path: Path, processed_frames: int) -> None:
+    """Yazilan output videosunun gecerli oldugunu dogrular; gecersizse AnonymizationError firlatir."""
+    if not output_path.exists():
+        raise AnonymizationError(
+            f"Anonimlestirme ciktisi olusturulamadi: {output_path}. "
+            "Detection baslatilmadi."
+        )
+    if output_path.stat().st_size == 0:
+        output_path.unlink(missing_ok=True)
+        raise AnonymizationError(
+            f"Anonimlestirme ciktisi bos (0 byte): {output_path}. "
+            "VideoWriter basarisiz olmus olabilir. Detection baslatilmadi."
+        )
+    if processed_frames == 0:
+        output_path.unlink(missing_ok=True)
+        raise AnonymizationError(
+            "Hic frame islenmedi; anonimlestirme tamamlanmadi. "
+            "Detection baslatilmadi."
+        )
+
+
 def anonymize_video(input_path: Path, output_path: Path) -> dict:
-    face_cascade = load_cascade("haarcascade_frontalface_default.xml")
-    plate_cascades = [
-        load_cascade("haarcascade_russian_plate_number.xml"),
-        load_cascade("haarcascade_license_plate_rus_16stages.xml"),
-    ]
-    plate_cascades = [cascade for cascade in plate_cascades if cascade is not None]
+    """Yuz ve plaka blurlama uygular.
+
+    Fail-closed: cascade yuklemesi, frame isleme veya output yazimi basarisiz
+    olursa AnonymizationError firlatilir ve pipeline durur.
+    """
+    face_cascade = _load_cascade_strict("haarcascade_frontalface_default.xml")
+    plate_cascades = _require_at_least_one_plate_cascade([
+        "haarcascade_russian_plate_number.xml",
+        "haarcascade_license_plate_rus_16stages.xml",
+    ])
 
     capture = cv2.VideoCapture(str(input_path))
     if not capture.isOpened():
@@ -58,14 +120,14 @@ def anonymize_video(input_path: Path, output_path: Path) -> dict:
     face_count = 0
     plate_count = 0
 
-    while True:
-        ok, frame = capture.read()
-        if not ok:
-            break
+    try:
+        while True:
+            ok, frame = capture.read()
+            if not ok:
+                break
 
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        if face_cascade is not None:
             faces = face_cascade.detectMultiScale(
                 gray,
                 scaleFactor=1.1,
@@ -76,22 +138,32 @@ def anonymize_video(input_path: Path, output_path: Path) -> dict:
                 blur_region(frame, x, y, w, h)
                 face_count += 1
 
-        for plate_cascade in plate_cascades:
-            plates = plate_cascade.detectMultiScale(
-                gray,
-                scaleFactor=1.1,
-                minNeighbors=4,
-                minSize=(40, 12),
-            )
-            for x, y, w, h in plates:
-                blur_region(frame, x, y, w, h)
-                plate_count += 1
+            for plate_cascade in plate_cascades:
+                plates = plate_cascade.detectMultiScale(
+                    gray,
+                    scaleFactor=1.1,
+                    minNeighbors=4,
+                    minSize=(40, 12),
+                )
+                for x, y, w, h in plates:
+                    blur_region(frame, x, y, w, h)
+                    plate_count += 1
 
-        writer.write(frame)
-        frame_count += 1
+            writer.write(frame)
+            frame_count += 1
+    except Exception as exc:
+        capture.release()
+        writer.release()
+        output_path.unlink(missing_ok=True)
+        raise AnonymizationError(
+            f"Frame isleme sirasinda hata: {exc}. "
+            "Kismi output silindi, detection baslatilmadi."
+        ) from exc
+    finally:
+        capture.release()
+        writer.release()
 
-    capture.release()
-    writer.release()
+    _validate_output(output_path, frame_count)
 
     return {
         "input": str(input_path),
@@ -107,7 +179,7 @@ def anonymize_video(input_path: Path, output_path: Path) -> dict:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Video uzerinde yuz ve plaka anonimlestirme uygular.")
+    parser = argparse.ArgumentParser(description="Video uzerinde yuz ve plaka anonimlestirme uygular (fail-closed).")
     parser.add_argument("--input", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
@@ -118,4 +190,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

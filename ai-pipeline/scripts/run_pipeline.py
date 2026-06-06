@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 
-from anonymize_video import anonymize_video
+from anonymize_video import anonymize_video, AnonymizationError
 from dedupe_json import dedupe
 from detect_objects import detect_objects
 from delete_raw_data import delete_raw_data
@@ -54,8 +54,18 @@ def main() -> None:
     pipeline_report_json = report_dir / "pipeline_report.json"
     deletion_report_json = report_dir / "deletion_report.json"
 
-    report = anonymize_video(args.input, anonymized_video)
+    try:
+        report = anonymize_video(args.input, anonymized_video)
+    except AnonymizationError as exc:
+        print(f"[FAIL-CLOSED] Anonimlestirme basarisiz: {exc}", flush=True)
+        raise SystemExit(1) from exc
+
     print(f"Anonimlestirme tamamlandi: {report}")
+
+    # Fail-closed guard: detection yalnizca basarili anonimlestirme sonrasi baslar.
+    assert anonymized_video.exists() and anonymized_video.stat().st_size > 0, (
+        "Anonimlestirme ciktisi gecersiz; detection engellenemedi."
+    )
 
     detections = detect_objects(
         video_path=anonymized_video,
@@ -95,6 +105,7 @@ def main() -> None:
         "demo_fallback_used": args.demo_fallback,
         "privacy_guardrails": {
             "runs_detection_after_anonymization": True,
+            "anonymization_succeeded": True,
             "stores_raw_frames": False,
             "json_contains_identity_data": False,
             "raw_data_deleted": bool(deletion_report),
